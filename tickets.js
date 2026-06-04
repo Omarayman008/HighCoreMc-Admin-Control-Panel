@@ -1,7 +1,7 @@
-// بيانات التكتات
+// Tickets Data
 window.ticketsData = [
   {
-    "timestamp": "2026-06-04T17:17:36.867Z",
+    "timestamp": "2026-06-04T17:31:47.321Z",
     "ticketOwner": "<@1350531070222794804>",
     "ticketOwnerId": "1350531070222794804",
     "ticketName": "case-32",
