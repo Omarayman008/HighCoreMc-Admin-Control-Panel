@@ -153,10 +153,15 @@ export default function Login() {
       }
 
       const userDiscordRoleIds = data.guild.roles.map((r: any) => r.id);
-      const matchingRoles = dashboardRoles.filter((r: any) => r.enabled && userDiscordRoleIds.includes(r.id));
 
+      const hasBaseStaffRole = userDiscordRoleIds.includes('1487195816220430406');
+      if (!hasBaseStaffRole) {
+        throw new Error('Access Denied: You are not a staff member.');
+      }
+
+      const matchingRoles = dashboardRoles.filter((r: any) => r.enabled && userDiscordRoleIds.includes(r.id));
       if (matchingRoles.length === 0) {
-        throw new Error('Access Denied: You do not have any authorized staff roles on the Discord server.');
+        throw new Error('Access Denied: You do not have any authorized administrative roles.');
       }
 
       matchingRoles.sort((a: any, b: any) => a.priority - b.priority);

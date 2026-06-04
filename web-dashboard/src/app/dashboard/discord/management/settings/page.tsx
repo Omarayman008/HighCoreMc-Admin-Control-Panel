@@ -318,7 +318,11 @@ const PERMISSIONS_GROUPS = [
       { key: 'reset_settings', label: 'reset_settings', desc: 'Reset All Settings' }
     ]
   }
-];// Main Component
+];
+
+const TOTAL_PERMISSIONS = PERMISSIONS_GROUPS.reduce((acc, g) => acc + g.permissions.length, 0);
+
+// Main Component
 export default function SettingsPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -392,8 +396,21 @@ export default function SettingsPage() {
 
   // Initial Load
   useEffect(() => {
-    const auth = localStorage.getItem('adminAuth');
-    if (auth === 'HighCoreadmin_@@') setIsAdmin(true);
+    const checkIsAdmin = async () => {
+      const auth = localStorage.getItem('adminAuth');
+      let adminPass = 'HighCoreadmin_@@';
+      try {
+        const { data } = await supabase.from('settings').select('value').eq('key', 'app_settings').maybeSingle();
+        if (data && data.value) {
+          const parsed = JSON.parse(data.value);
+          if (parsed?.security?.adminPassword) adminPass = parsed.security.adminPassword;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      if (auth === adminPass) setIsAdmin(true);
+    };
+    checkIsAdmin();
     fetchData();
   }, []);
 
@@ -507,6 +524,25 @@ export default function SettingsPage() {
       updated[index] = { ...updated[index], [field]: value };
       return updated;
     });
+  };
+
+  const handleRoleIdChange = (index: number, oldId: string, newId: string) => {
+    setAdminRoles((prev: any[]) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], id: newId };
+      return updated;
+    });
+    setRolePermissions(prev => {
+      const updated = { ...prev };
+      if (updated[oldId]) {
+        updated[newId] = updated[oldId];
+        delete updated[oldId];
+      }
+      return updated;
+    });
+    if (selectedRoleId === oldId) {
+      setSelectedRoleId(newId);
+    }
   };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -884,22 +920,70 @@ export default function SettingsPage() {
 
                         <div>
                           <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Titles Size (px)</label>
-                          <input type="number" className="input-field" style={{ background: 'rgba(0,0,0,0.2)' }} value={appSettings.appearance.fontSizeTitle} onChange={e => updateAppField(['appearance', 'fontSizeTitle'], parseInt(e.target.value) || 14)} />
+                          <input 
+                            type="number" 
+                            className="input-field" 
+                            style={{ background: 'rgba(0,0,0,0.2)' }} 
+                            value={appSettings.appearance.fontSizeTitle} 
+                            onChange={e => {
+                              const val = e.target.value;
+                              updateAppField(['appearance', 'fontSizeTitle'], val === '' ? '' : (parseInt(val) || 0));
+                            }} 
+                            onBlur={e => {
+                              if (e.target.value === '') updateAppField(['appearance', 'fontSizeTitle'], 14);
+                            }}
+                          />
                         </div>
 
                         <div>
                           <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Body Size (px)</label>
-                          <input type="number" className="input-field" style={{ background: 'rgba(0,0,0,0.2)' }} value={appSettings.appearance.fontSizeBody} onChange={e => updateAppField(['appearance', 'fontSizeBody'], parseInt(e.target.value) || 13)} />
+                          <input 
+                            type="number" 
+                            className="input-field" 
+                            style={{ background: 'rgba(0,0,0,0.2)' }} 
+                            value={appSettings.appearance.fontSizeBody} 
+                            onChange={e => {
+                              const val = e.target.value;
+                              updateAppField(['appearance', 'fontSizeBody'], val === '' ? '' : (parseInt(val) || 0));
+                            }} 
+                            onBlur={e => {
+                              if (e.target.value === '') updateAppField(['appearance', 'fontSizeBody'], 13);
+                            }}
+                          />
                         </div>
 
                         <div>
                           <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Labels / Small Size (px)</label>
-                          <input type="number" className="input-field" style={{ background: 'rgba(0,0,0,0.2)' }} value={appSettings.appearance.fontSizeSmall} onChange={e => updateAppField(['appearance', 'fontSizeSmall'], parseInt(e.target.value) || 11)} />
+                          <input 
+                            type="number" 
+                            className="input-field" 
+                            style={{ background: 'rgba(0,0,0,0.2)' }} 
+                            value={appSettings.appearance.fontSizeSmall} 
+                            onChange={e => {
+                              const val = e.target.value;
+                              updateAppField(['appearance', 'fontSizeSmall'], val === '' ? '' : (parseInt(val) || 0));
+                            }} 
+                            onBlur={e => {
+                              if (e.target.value === '') updateAppField(['appearance', 'fontSizeSmall'], 11);
+                            }}
+                          />
                         </div>
 
                         <div>
                           <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Interface Corners Radius (px)</label>
-                          <input type="number" className="input-field" style={{ background: 'rgba(0,0,0,0.2)' }} value={appSettings.appearance.borderRadius} onChange={e => updateAppField(['appearance', 'borderRadius'], parseInt(e.target.value) || 13)} />
+                          <input 
+                            type="number" 
+                            className="input-field" 
+                            style={{ background: 'rgba(0,0,0,0.2)' }} 
+                            value={appSettings.appearance.borderRadius} 
+                            onChange={e => {
+                              const val = e.target.value;
+                              updateAppField(['appearance', 'borderRadius'], val === '' ? '' : (parseInt(val) || 0));
+                            }} 
+                            onBlur={e => {
+                              if (e.target.value === '') updateAppField(['appearance', 'borderRadius'], 13);
+                            }}
+                          />
                         </div>
                       </div>
                     </div>
@@ -1228,7 +1312,7 @@ export default function SettingsPage() {
                                     type="text"
                                     value={role.id}
                                     onClick={e => e.stopPropagation()}
-                                    onChange={e => updateRoleField(idx, 'id', e.target.value)}
+                                    onChange={e => handleRoleIdChange(idx, role.id, e.target.value)}
                                     style={{
                                       background: 'transparent',
                                       border: 'none',
@@ -1346,7 +1430,7 @@ export default function SettingsPage() {
                                       Permissions: {selectedRole.name}
                                     </h5>
                                     <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem', margin: 0 }}>
-                                      {roleKeys.length} / 50 Permissions Enabled
+                                      {roleKeys.length} / {TOTAL_PERMISSIONS} Permissions Enabled
                                     </p>
                                   </div>
 
@@ -1472,7 +1556,19 @@ export default function SettingsPage() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Clear System Logs Automatically (Older than X days)</label>
-                        <input type="number" className="input-field" style={{ background: 'rgba(0,0,0,0.2)', maxWidth: '200px' }} value={appSettings.logs.autoClearDays} onChange={e => updateAppField(['logs', 'autoClearDays'], parseInt(e.target.value) || 30)} />
+                        <input 
+                          type="number" 
+                          className="input-field" 
+                          style={{ background: 'rgba(0,0,0,0.2)', maxWidth: '200px' }} 
+                          value={appSettings.logs.autoClearDays} 
+                          onChange={e => {
+                            const val = e.target.value;
+                            updateAppField(['logs', 'autoClearDays'], val === '' ? '' : (parseInt(val) || 0));
+                          }} 
+                          onBlur={e => {
+                            if (e.target.value === '') updateAppField(['logs', 'autoClearDays'], 30);
+                          }}
+                        />
                       </div>
 
                       <div>
@@ -1505,19 +1601,25 @@ export default function SettingsPage() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 1000
         }}>
-          <div style={{
-            background: 'var(--bg)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '16px',
-            padding: '2rem',
-            width: '400px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.5rem'
-          }}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleAddRole(newRoleName, newRoleId, newRoleColor);
+            }}
+            style={{
+              background: 'var(--bg)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '16px',
+              padding: '2rem',
+              width: '400px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.5rem'
+            }}
+          >
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-              👑 Add New Role
+              <Award size={22} color="var(--primary)" /> Add New Role
             </h3>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Role Name *</label>
@@ -1528,6 +1630,7 @@ export default function SettingsPage() {
                 onChange={e => setNewRoleName(e.target.value)}
                 placeholder="e.g. Event Manager"
                 style={{ background: 'rgba(0,0,0,0.2)' }}
+                required
               />
             </div>
             <div>
@@ -1539,17 +1642,20 @@ export default function SettingsPage() {
                 onChange={e => setNewRoleId(e.target.value)}
                 placeholder="e.g. 1481234567890123456"
                 style={{ background: 'rgba(0,0,0,0.2)' }}
+                required
               />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Role Color</label>
               <CustomColorPicker value={newRoleColor} onChange={setNewRoleColor} align="left" />
             </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-              ⚠️ Important: Please make sure the Role ID is correct. The role will be initialized with basic Staff permissions.
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <ShieldAlert size={16} color="#eab308" style={{ flexShrink: 0 }} />
+              <span>Important: Please make sure the Role ID is correct. The role will be initialized with basic Staff permissions.</span>
             </div>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
               <button
+                type="button"
                 onClick={() => setShowAddRoleModal(false)}
                 style={{
                   padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid var(--glass-border)',
@@ -1559,7 +1665,7 @@ export default function SettingsPage() {
                 Cancel
               </button>
               <button
-                onClick={() => handleAddRole(newRoleName, newRoleId, newRoleColor)}
+                type="submit"
                 style={{
                   padding: '0.6rem 1.2rem', borderRadius: '8px', border: 'none',
                   background: 'var(--primary)', color: 'white', cursor: 'pointer', fontWeight: 700
@@ -1568,7 +1674,7 @@ export default function SettingsPage() {
                 Add Role
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
 

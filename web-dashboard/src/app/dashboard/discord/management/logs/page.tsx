@@ -84,8 +84,21 @@ export default function LogsPage() {
 
   // Initial Load
   useEffect(() => {
-    const auth = localStorage.getItem('adminAuth');
-    if (auth === 'HighCoreadmin_@@') setIsAdmin(true);
+    const checkIsAdmin = async () => {
+      const auth = localStorage.getItem('adminAuth');
+      let adminPass = 'HighCoreadmin_@@';
+      try {
+        const { data } = await supabase.from('settings').select('value').eq('key', 'app_settings').maybeSingle();
+        if (data && data.value) {
+          const parsed = JSON.parse(data.value);
+          if (parsed?.security?.adminPassword) adminPass = parsed.security.adminPassword;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      if (auth === adminPass) setIsAdmin(true);
+    };
+    checkIsAdmin();
     fetchLogs();
   }, []);
 

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
 
@@ -22,6 +23,20 @@ export default function ConfirmModal({
   cancelText = 'Cancel',
   type = 'danger'
 }: ConfirmModalProps) {
+  
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onConfirm();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onConfirm]);
   
   const colors = {
     danger: { bg: 'rgba(239, 68, 68, 0.1)', icon: '#ef4444', btn: '#ef4444' },
