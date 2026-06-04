@@ -334,7 +334,7 @@ export default function SettingsPage() {
   const [appearanceTab, setAppearanceTab] = useState<'general' | 'colors' | 'fonts'>('general');
   const [contentTab, setContentTab] = useState<'texts' | 'icons' | 'login'>('texts');
   const [functionsTab, setFunctionsTab] = useState<'tickets' | 'tasks' | 'events' | 'reports'>('tickets');
-  const [systemTab, setSystemTab] = useState<'roles' | 'security' | 'logs'>('roles');
+  const [systemTab, setSystemTab] = useState<'roles' | 'fixed_roles' | 'security' | 'logs'>('roles');
 
   // Form State
   const [appSettings, setAppSettings] = useState<any>(DEFAULT_APP_SETTINGS);
@@ -1199,18 +1199,19 @@ export default function SettingsPage() {
                   style={{ borderTop: '1px solid var(--glass-border)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
                 >
                   <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.8rem' }}>
+                    <button onClick={() => setSystemTab('fixed_roles')} style={{ background: systemTab === 'fixed_roles' ? 'rgba(239,68,68,0.15)' : 'transparent', color: systemTab === 'fixed_roles' ? '#EF4444' : 'var(--text-muted)', padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Fixed Roles</button>
                     <button onClick={() => setSystemTab('roles')} style={{ background: systemTab === 'roles' ? 'rgba(239,68,68,0.15)' : 'transparent', color: systemTab === 'roles' ? '#EF4444' : 'var(--text-muted)', padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Administrative Roles</button>
                     <button onClick={() => setSystemTab('security')} style={{ background: systemTab === 'security' ? 'rgba(239,68,68,0.15)' : 'transparent', color: systemTab === 'security' ? '#EF4444' : 'var(--text-muted)', padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Passwords Settings</button>
                     <button onClick={() => setSystemTab('logs')} style={{ background: systemTab === 'logs' ? 'rgba(239,68,68,0.15)' : 'transparent', color: systemTab === 'logs' ? '#EF4444' : 'var(--text-muted)', padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Logs Cleanup</button>
                   </div>
 
-                  {systemTab === 'roles' && (
+                  {(systemTab === 'roles' || systemTab === 'fixed_roles') && (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '2rem', minHeight: '500px', flexWrap: 'wrap' }}>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <h4 style={{ color: 'var(--foreground)', fontWeight: 700, fontSize: '1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                            <Users size={18} color="var(--primary)" /> Roles ({adminRoles.length})
+                            <Users size={18} color="var(--primary)" /> {systemTab === 'fixed_roles' ? 'Fixed Roles' : 'Roles'} ({adminRoles.filter(r => systemTab === 'fixed_roles' ? r.is_fixed : !r.is_fixed).length})
                           </h4>
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
@@ -1247,7 +1248,10 @@ export default function SettingsPage() {
                           overflowY: 'auto',
                           paddingRight: '0.5rem'
                         }}>
-                          {adminRoles.map((role, idx) => {
+                          {adminRoles
+                            .map((role, idx) => ({ role, idx }))
+                            .filter(({ role }) => systemTab === 'fixed_roles' ? role.is_fixed : !role.is_fixed)
+                            .map(({ role, idx }) => {
                             const isSelected = selectedRoleId === role.id;
                             return (
                               <div
