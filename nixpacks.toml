@@ -1,0 +1,8 @@
+[phases.install]
+cmds = ["cd web-dashboard && npm ci"]
+
+[phases.build]
+cmds = ["cd web-dashboard && npm run build"]
+
+[start]
+cmd = "cd web-dashboard && npm start"
