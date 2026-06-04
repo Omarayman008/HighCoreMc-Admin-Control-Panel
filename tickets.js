@@ -1,14 +1,14 @@
 // Tickets Data
 window.ticketsData = [
   {
-    "timestamp": "2026-06-04T17:48:54.609Z",
-    "openedAt": "2026-06-04T17:48:00.000Z",
+    "timestamp": "2026-06-04T22:05:33.453Z",
+    "openedAt": "2026-06-04T22:05:00.000Z",
     "ticketOwner": "<@1350531070222794804>",
     "ticketOwnerId": "1350531070222794804",
-    "ticketName": "case-33",
+    "ticketName": "case-34",
     "panelName": "Case",
-    "transcriptFile": "transcripts/case-33.html",
-    "transcriptUrl": "https://highcoremc-production.up.railway.app/view/transcript/33",
+    "transcriptFile": "transcripts/case-34.html",
+    "transcriptUrl": "https://highcoremc-production.up.railway.app/view/transcript/34",
     "claimedBy": "** <@1350531070222794804>",
     "handlerUsername": null,
     "users": [
