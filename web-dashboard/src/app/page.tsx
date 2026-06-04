@@ -13,13 +13,13 @@ export default function Login() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [settings, setSettings] = useState<any>(null);
-  const [confirmConfig, setConfirmConfig] = useState<{isOpen: boolean, type: 'danger'|'success'|'info', title: string, message: string, onConfirm: () => void}>({
-    isOpen: false, type: 'danger', title: '', message: '', onConfirm: () => {}
+  const [confirmConfig, setConfirmConfig] = useState<{ isOpen: boolean, type: 'danger' | 'success' | 'info', title: string, message: string, onConfirm: () => void }>({
+    isOpen: false, type: 'danger', title: '', message: '', onConfirm: () => { }
   });
 
   const DEFAULT_MAP: Record<string, Record<string, string>> = {
     login: {
-      title: 'Opex System',
+      title: 'HighCoreMc',
       welcome: 'Welcome Back',
       iconAdmin: 'ShieldAlert',
       textAdmin: 'Staff Manager',
@@ -72,8 +72,17 @@ export default function Login() {
   // Discord OAuth Logic
   const handleDiscordLogin = () => {
     const DISCORD_CLIENT_ID = '1480381951352504371';
-    const REDIRECT_URI = encodeURIComponent('http://localhost:3000/api/auth/callback');
-    window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=identify%20guilds.members.read`;
+
+    const REDIRECT_URI = 'https://admin.highcores.com/';
+
+    const params = new URLSearchParams({
+      client_id: DISCORD_CLIENT_ID,
+      redirect_uri: REDIRECT_URI,
+      response_type: 'code',
+      scope: 'identify guilds.members.read',
+    });
+
+    window.location.href = `https://discord.com/oauth2/authorize?${params.toString()}`;
   };
 
   const handleRoleLogin = (e: React.FormEvent) => {
@@ -81,7 +90,7 @@ export default function Login() {
     let isCorrect = false;
     let authVal = '';
     let username = '';
-    
+
     const adminPass = settings?.security?.adminPassword || 'HighCoreadmin_@@';
     const modPass = settings?.security?.modPassword || 'HighCoremod_@@';
     const staffPass = settings?.security?.staffPassword || 'HighCorestaff_@@';
@@ -125,9 +134,9 @@ export default function Login() {
     <>
       {/* Background */}
       <div className="bg-gradient" />
-      
+
       <div className="container">
-        <motion.div 
+        <motion.div
           className="glass-panel"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -156,7 +165,7 @@ export default function Login() {
           {/* Password Field Animation */}
           <AnimatePresence>
             {selectedRole && (
-              <motion.form 
+              <motion.form
                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
                 animate={{ opacity: 1, height: 'auto', marginTop: '0.5rem' }}
                 exit={{ opacity: 0, height: 0, marginTop: 0 }}
@@ -190,14 +199,14 @@ export default function Login() {
           {/* Discord Login */}
           <button className="btn btn-discord" onClick={handleDiscordLogin}>
             <svg width="24" height="24" viewBox="0 0 127.14 96.36" fill="currentColor">
-              <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+              <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z" />
             </svg>
             Continue with Discord
           </button>
         </motion.div>
       </div>
 
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={confirmConfig.isOpen}
         title={confirmConfig.title}
         message={confirmConfig.message}
