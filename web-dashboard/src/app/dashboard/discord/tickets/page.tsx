@@ -274,7 +274,7 @@ export default function TicketsPage() {
                   <tr key={t.id || idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                     <td style={{ padding: '1rem', fontWeight: 700 }}>
                       <a 
-                        href={`https://highcoremc-production.up.railway.app/view/transcript/${(t.ticket_id || '').replace(/\D/g, '')}`}
+                        href={t.transcript_url || `https://highcoremc-production.up.railway.app/view/transcript/${(t.ticket_id || '').replace(/\D/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ color: '#5865F2', textDecoration: 'none' }}
