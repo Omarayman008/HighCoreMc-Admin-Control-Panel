@@ -88,7 +88,8 @@ export default function RanksPage() {
 
   useEffect(() => {
     const auth = localStorage.getItem('adminAuth');
-    if (auth === 'HighCoreadmin_@@') setIsAdmin(true);
+    const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
+    if (auth === 'HighCoreadmin_@@' || isAdminLocal) setIsAdmin(true);
     fetchData();
   }, []);
 
@@ -97,7 +98,7 @@ export default function RanksPage() {
     const { data: rData } = await supabase.from('ranks').select('*').order('sort_order', { ascending: true });
     if (rData) setRanks(rData);
 
-    const { data: eData } = await supabase.from('employees').select('id, points, rank_override');
+    const { data: eData } = await supabase.from('employees').select('*');
     if (eData) setEmployees(eData);
     
     setIsLoading(false);

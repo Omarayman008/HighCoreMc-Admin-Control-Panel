@@ -93,9 +93,8 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    // Get username from local auth
-    const auth = localStorage.getItem('adminAuth');
-    if (auth === 'HighCoreadmin_@@') setUsername('Administrator');
+    const user = localStorage.getItem('adminUsername');
+    if (user) setUsername(user);
 
     async function fetchData() {
       try {

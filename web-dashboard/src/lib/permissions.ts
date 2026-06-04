@@ -1,0 +1,22 @@
+import { supabase } from './supabase';
+
+export function hasPermission(permission: string): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  const auth = localStorage.getItem('adminAuth');
+  const isAdmin = localStorage.getItem('isAdmin') === 'true' || auth === 'HighCoreadmin_@@';
+  if (isAdmin) return true;
+
+  try {
+    const permsStr = localStorage.getItem('userPermissions');
+    if (permsStr) {
+      const perms = JSON.parse(permsStr);
+      if (Array.isArray(perms)) {
+        return perms.includes(permission) || perms.includes('*');
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return false;
+}

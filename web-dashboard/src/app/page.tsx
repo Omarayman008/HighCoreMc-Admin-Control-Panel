@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, ShieldAlert, ShieldCheck, Lock, LogIn } from 'lucide-react';
@@ -18,6 +18,7 @@ export default function Login() {
   });
   const [redirectTo, setRedirectTo] = useState('/dashboard');
   const [isLoggingInDiscord, setIsLoggingInDiscord] = useState(false);
+  const callbackCalled = useRef(false);
 
   const DEFAULT_MAP: Record<string, Record<string, string>> = {
     login: {
@@ -88,7 +89,8 @@ export default function Login() {
     }
 
     const code = params.get('code');
-    if (code) {
+    if (code && !callbackCalled.current) {
+      callbackCalled.current = true;
       handleDiscordCallback(code);
     }
   }, []);
@@ -113,7 +115,7 @@ export default function Login() {
   const handleDiscordCallback = async (code: string) => {
     setIsLoggingInDiscord(true);
     try {
-      router.replace(window.location.pathname);
+      window.history.replaceState({}, document.title, window.location.pathname);
 
       const response = await fetch('/discord/callback', {
         method: 'POST',
@@ -182,15 +184,57 @@ export default function Login() {
         roleName = 'Moderator';
       }
 
+      const displayName = data.guild.nickname || data.user.globalName || data.user.username;
+      const jobTitles = matchingRoles.map((r: any, idx: number) => ({
+        title: r.name,
+        is_main: idx === 0
+      }));
+
+      const { data: existingEmp } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('discord_id', data.user.id)
+        .maybeSingle();
+
+      if (existingEmp) {
+        await supabase
+          .from('employees')
+          .update({
+            name: displayName,
+            job_titles: jobTitles
+          })
+          .eq('discord_id', data.user.id);
+      } else {
+        const newId = Math.floor(100000000 + Math.random() * 900000000);
+        await supabase
+          .from('employees')
+          .insert({
+            id: newId,
+            name: displayName,
+            discord_id: data.user.id,
+            points: 0,
+            dc_points: 0,
+            mc_points: 0,
+            tickets: 0,
+            role: 'إداري',
+            avatar: '⭐',
+            color: '#F4B942',
+            rank_override: null,
+            job_titles: jobTitles
+          });
+      }
+
       localStorage.setItem('adminAuth', authVal);
-      localStorage.setItem('adminUsername', data.guild.nickname || data.user.globalName || data.user.username);
+      localStorage.setItem('adminUsername', displayName);
       localStorage.setItem('discordUser', JSON.stringify(data.user));
+      localStorage.setItem('isAdmin', authVal === adminPass ? 'true' : 'false');
+      localStorage.setItem('userPermissions', JSON.stringify(permissions));
 
       await supabase.from('activity_log').insert({
         action_type: 'Discord Login',
         category: 'Auth',
         details: `Logged in via Discord as ${data.user.username} (${roleName}).`,
-        user_name: data.guild.nickname || data.user.globalName || data.user.username
+        user_name: displayName
       });
 
       const targetRedir = localStorage.getItem('redirect_to') || redirectTo || '/dashboard';
@@ -223,20 +267,36 @@ export default function Login() {
     if (selectedRole === 'administrator') {
       isCorrect = password === adminPass;
       authVal = adminPass;
-      username = 'Administrator';
+      username = 'Guest';
     } else if (selectedRole === 'moderator') {
       isCorrect = password === modPass;
       authVal = modPass;
-      username = 'Moderator';
+      username = 'Guest';
     } else if (selectedRole === 'staff') {
       isCorrect = password === staffPass;
       authVal = staffPass;
-      username = 'Staff';
+      username = 'Guest';
     }
 
     if (isCorrect) {
+      let perms: string[] = [];
+      if (selectedRole === 'administrator') {
+        perms = ['*'];
+      } else if (selectedRole === 'moderator') {
+        perms = [
+          'view_dashboard', 'view_employees', 'view_forums', 'view_tickets',
+          'add_points', 'remove_points', 'review_reports', 'add_whitelist',
+          'edit_whitelist', 'submit_report'
+        ];
+      } else if (selectedRole === 'staff') {
+        perms = [
+          'view_dashboard', 'claim_event', 'complete_task', 'submit_report'
+        ];
+      }
       localStorage.setItem('adminAuth', authVal);
       localStorage.setItem('adminUsername', username);
+      localStorage.setItem('isAdmin', selectedRole === 'administrator' ? 'true' : 'false');
+      localStorage.setItem('userPermissions', JSON.stringify(perms));
       router.push(redirectTo || '/dashboard');
     } else {
       setConfirmConfig({

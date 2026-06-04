@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Plus, Edit2, Trash2, Star, Briefcase, X, AlertCircle, Shield, Award, Search, TrendingUp, ChevronDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { hasPermission } from '@/lib/permissions';
 
 interface Rank {
   name: string;
@@ -118,7 +119,8 @@ export default function StaffPage() {
 
   useEffect(() => {
     const auth = localStorage.getItem('adminAuth');
-    if (auth === 'HighCoreadmin_@@') setIsAdmin(true);
+    const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
+    if (auth === 'HighCoreadmin_@@' || isAdminLocal) setIsAdmin(true);
     fetchData();
   }, []);
 
@@ -314,12 +316,14 @@ export default function StaffPage() {
               style={{ padding: '0.8rem 1rem 0.8rem 2.5rem', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'var(--glass-bg)', color: 'var(--foreground)', outline: 'none' }}
             />
           </div>
-          <button 
-            onClick={() => { setEditingEmployee(null); setStaffForm({ name: '', role: '', discord_id: '', avatar: 'A', color: '#5C9EFF', points: 0, rank_override: '' }); setShowStaffModal(true); }}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--primary)', color: 'white', padding: '0.8rem 1.5rem', borderRadius: '12px', fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 0 20px rgba(2, 72, 193, 0.4)' }}
-          >
-            <Plus size={20} /> New Staff
-          </button>
+          {hasPermission('add_employee') && (
+            <button 
+              onClick={() => { setEditingEmployee(null); setStaffForm({ name: '', role: '', discord_id: '', avatar: 'A', color: '#5C9EFF', points: 0, rank_override: '' }); setShowStaffModal(true); }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--primary)', color: 'white', padding: '0.8rem 1.5rem', borderRadius: '12px', fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 0 20px rgba(2, 72, 193, 0.4)' }}
+            >
+              <Plus size={20} /> New Staff
+            </button>
+          )}
         </div>
       </div>
 
@@ -363,13 +367,8 @@ export default function StaffPage() {
                             </div>
                             <div>
                               <div style={{ color: 'var(--foreground)', fontWeight: 700, fontSize: '1.1rem' }}>{emp.name}</div>
-                              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.3rem', flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{emp.role}</span>
-                                {mainJob && (
-                                  <span style={{ fontSize: '0.75rem', background: 'rgba(139, 92, 246, 0.1)', color: 'var(--primary)', padding: '0.1rem 0.5rem', borderRadius: '6px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-                                    {mainJob.title}
-                                  </span>
-                                )}
+                              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.3rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{mainJob ? mainJob.title : emp.role}</span>
                                 {extraJobsCount > 0 && (
                                   <span title="More Job Titles" style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', padding: '0.1rem 0.5rem', borderRadius: '6px', cursor: 'help' }}>
                                     +{extraJobsCount}
@@ -416,18 +415,26 @@ export default function StaffPage() {
                         {/* Actions */}
                         <td style={{ padding: '1.2rem', textAlign: 'center' }}>
                           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                            <button onClick={() => { setSelectedEmpId(emp.id); setShowJobsModal(true); }} title="Job Titles" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'var(--text-muted)', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }} onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}>
-                              <Briefcase size={16} style={{ margin: 'auto' }} />
-                            </button>
-                            <button onClick={() => { setSelectedEmpId(emp.id); setPointsForm({...pointsForm, amount: 10, note: ''}); setShowPointsModal(true); }} title="Manage Points" style={{ background: 'rgba(250, 204, 21, 0.1)', border: '1px solid rgba(250, 204, 21, 0.2)', color: '#facc15', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(250, 204, 21, 0.2)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(250, 204, 21, 0.1)' }}>
-                              <Star size={16} style={{ margin: 'auto' }} />
-                            </button>
-                            <button onClick={() => { setEditingEmployee(emp); setStaffForm({ name: emp.name, role: emp.role, discord_id: emp.discord_id || '', avatar: emp.avatar, color: emp.color, points: emp.points, rank_override: emp.rank_override || '' }); setShowStaffModal(true); }} title="Edit Staff" style={{ background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.2)', color: '#38bdf8', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.2)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.1)' }}>
-                              <Edit2 size={16} style={{ margin: 'auto' }} />
-                            </button>
-                            <button onClick={() => { setSelectedEmpId(emp.id); setShowDeleteModal(true); }} title="Delete Staff" style={{ background: 'rgba(248, 113, 113, 0.1)', border: '1px solid rgba(248, 113, 113, 0.2)', color: '#f87171', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248, 113, 113, 0.2)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248, 113, 113, 0.1)' }}>
-                              <Trash2 size={16} style={{ margin: 'auto' }} />
-                            </button>
+                            {hasPermission('manage_job_titles') && (
+                              <button onClick={() => { setSelectedEmpId(emp.id); setShowJobsModal(true); }} title="Job Titles" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'var(--text-muted)', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }} onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}>
+                                <Briefcase size={16} style={{ margin: 'auto' }} />
+                              </button>
+                            )}
+                            {hasPermission('add_points') && (
+                              <button onClick={() => { setSelectedEmpId(emp.id); setPointsForm({...pointsForm, amount: 10, note: ''}); setShowPointsModal(true); }} title="Manage Points" style={{ background: 'rgba(250, 204, 21, 0.1)', border: '1px solid rgba(250, 204, 21, 0.2)', color: '#facc15', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(250, 204, 21, 0.2)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(250, 204, 21, 0.1)' }}>
+                                <Star size={16} style={{ margin: 'auto' }} />
+                              </button>
+                            )}
+                            {hasPermission('edit_employee') && (
+                              <button onClick={() => { setEditingEmployee(emp); setStaffForm({ name: emp.name, role: emp.role, discord_id: emp.discord_id || '', avatar: emp.avatar, color: emp.color, points: emp.points, rank_override: emp.rank_override || '' }); setShowStaffModal(true); }} title="Edit Staff" style={{ background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.2)', color: '#38bdf8', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.2)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.1)' }}>
+                                <Edit2 size={16} style={{ margin: 'auto' }} />
+                              </button>
+                            )}
+                            {hasPermission('delete_employee') && (
+                              <button onClick={() => { setSelectedEmpId(emp.id); setShowDeleteModal(true); }} title="Delete Staff" style={{ background: 'rgba(248, 113, 113, 0.1)', border: '1px solid rgba(248, 113, 113, 0.2)', color: '#f87171', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248, 113, 113, 0.2)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248, 113, 113, 0.1)' }}>
+                                <Trash2 size={16} style={{ margin: 'auto' }} />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </motion.tr>
@@ -444,6 +451,8 @@ export default function StaffPage() {
             {filteredEmployees.map((emp) => {
                const rank = getRankForEmployee(emp);
                const progress = getProgress(emp);
+               const mainJob = emp.job_titles?.find(j => j.is_main) || emp.job_titles?.[0];
+               const extraJobsCount = emp.job_titles?.length > 1 ? emp.job_titles.length - 1 : 0;
                return (
                  <div key={emp.id} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
@@ -452,7 +461,14 @@ export default function StaffPage() {
                       </div>
                       <div>
                         <div style={{ color: 'var(--foreground)', fontWeight: 800, fontSize: '1.2rem' }}>{emp.name}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{emp.role}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                          <span>{mainJob ? mainJob.title : emp.role}</span>
+                          {extraJobsCount > 0 && (
+                            <span title="More Job Titles" style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', padding: '0.1rem 0.5rem', borderRadius: '6px' }}>
+                              +{extraJobsCount}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: `${rank.color}15`, border: `1px solid ${rank.color}30`, padding: '0.4rem 0.8rem', borderRadius: '10px', width: 'fit-content', marginBottom: '1.5rem' }}>
@@ -479,10 +495,18 @@ export default function StaffPage() {
                     </div>
 
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'space-between' }}>
-                      <button onClick={() => { setSelectedEmpId(emp.id); setShowJobsModal(true); }} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'var(--text-muted)', padding: '0.8rem', borderRadius: '10px' }}><Briefcase size={18} style={{ margin: 'auto' }} /></button>
-                      <button onClick={() => { setSelectedEmpId(emp.id); setPointsForm({...pointsForm, amount: 10, note: ''}); setShowPointsModal(true); }} style={{ flex: 1, background: 'rgba(250, 204, 21, 0.1)', border: '1px solid rgba(250, 204, 21, 0.2)', color: '#facc15', padding: '0.8rem', borderRadius: '10px' }}><Star size={18} style={{ margin: 'auto' }} /></button>
-                      <button onClick={() => { setEditingEmployee(emp); setStaffForm({ name: emp.name, role: emp.role, discord_id: emp.discord_id || '', avatar: emp.avatar, color: emp.color, points: emp.points, rank_override: emp.rank_override || '' }); setShowStaffModal(true); }} style={{ flex: 1, background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '0.8rem', borderRadius: '10px' }}><Edit2 size={18} style={{ margin: 'auto' }} /></button>
-                      <button onClick={() => { setSelectedEmpId(emp.id); setShowDeleteModal(true); }} style={{ flex: 1, background: 'rgba(248, 113, 113, 0.1)', border: '1px solid rgba(248, 113, 113, 0.2)', color: '#f87171', padding: '0.8rem', borderRadius: '10px' }}><Trash2 size={18} style={{ margin: 'auto' }} /></button>
+                      {hasPermission('manage_job_titles') && (
+                        <button onClick={() => { setSelectedEmpId(emp.id); setShowJobsModal(true); }} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'var(--text-muted)', padding: '0.8rem', borderRadius: '10px' }}><Briefcase size={18} style={{ margin: 'auto' }} /></button>
+                      )}
+                      {hasPermission('add_points') && (
+                        <button onClick={() => { setSelectedEmpId(emp.id); setPointsForm({...pointsForm, amount: 10, note: ''}); setShowPointsModal(true); }} style={{ flex: 1, background: 'rgba(250, 204, 21, 0.1)', border: '1px solid rgba(250, 204, 21, 0.2)', color: '#facc15', padding: '0.8rem', borderRadius: '10px' }}><Star size={18} style={{ margin: 'auto' }} /></button>
+                      )}
+                      {hasPermission('edit_employee') && (
+                        <button onClick={() => { setEditingEmployee(emp); setStaffForm({ name: emp.name, role: emp.role, discord_id: emp.discord_id || '', avatar: emp.avatar, color: emp.color, points: emp.points, rank_override: emp.rank_override || '' }); setShowStaffModal(true); }} style={{ flex: 1, background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '0.8rem', borderRadius: '10px' }}><Edit2 size={18} style={{ margin: 'auto' }} /></button>
+                      )}
+                      {hasPermission('delete_employee') && (
+                        <button onClick={() => { setSelectedEmpId(emp.id); setShowDeleteModal(true); }} style={{ flex: 1, background: 'rgba(248, 113, 113, 0.1)', border: '1px solid rgba(248, 113, 113, 0.2)', color: '#f87171', padding: '0.8rem', borderRadius: '10px' }}><Trash2 size={18} style={{ margin: 'auto' }} /></button>
+                      )}
                     </div>
                  </div>
                )

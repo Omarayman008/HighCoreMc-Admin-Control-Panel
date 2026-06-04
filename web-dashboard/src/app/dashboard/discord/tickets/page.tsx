@@ -88,8 +88,8 @@ export default function TicketsPage() {
 
   useEffect(() => {
     const auth = localStorage.getItem('adminAuth');
-    if (auth === 'HighCoreadmin_@@') setIsAdmin(true);
-
+    const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
+    if (auth === 'HighCoreadmin_@@' || isAdminLocal) setIsAdmin(true);
     fetchData();
   }, [fetchData]);
 

@@ -137,7 +137,8 @@ export default function ForumsPage() {
 
   useEffect(() => {
     const auth = localStorage.getItem('adminAuth');
-    if (auth === 'HighCoreadmin_@@') setIsAdmin(true);
+    const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
+    if (auth === 'HighCoreadmin_@@' || isAdminLocal) setIsAdmin(true);
 
     fetchTags();
     fetchData();

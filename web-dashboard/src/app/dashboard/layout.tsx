@@ -86,8 +86,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setIsAuthorized(true);
         if (auth === adminPass) {
           setIsAdmin(true);
+          localStorage.setItem('isAdmin', 'true');
         } else {
           setIsAdmin(false);
+          localStorage.setItem('isAdmin', 'false');
         }
       }
     };
@@ -293,6 +295,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     } else {
       document.body.classList.remove('light-theme');
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuth');
+    localStorage.removeItem('adminUsername');
+    localStorage.removeItem('discordUser');
+    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('userPermissions');
+    router.push('/');
   };
 
   const navItems = [
@@ -602,13 +613,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {theme === 'dark' ? <><Moon size={18} /> Dark</> : <><Sun size={18} /> Light</>}
             </button>
 
-            <Link href="/" style={{ textDecoration: 'none' }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', padding: '0.6rem 1.2rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
-              }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                <LogOut size={18} /> Logout
-              </div>
-            </Link>
+            <div onClick={handleLogout} style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', padding: '0.6rem 1.2rem', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
+            }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+              <LogOut size={18} /> Logout
+            </div>
           </div>
         </header>
 
