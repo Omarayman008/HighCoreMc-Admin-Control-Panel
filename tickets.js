@@ -1,7 +1,7 @@
 // Tickets Data
 window.ticketsData = [
   {
-    "timestamp": "2026-06-04T23:10:50.788Z",
+    "timestamp": "2026-06-04T23:37:07.818Z",
     "openedAt": "2026-06-04T23:10:00.000Z",
     "ticketOwner": "<@1350531070222794804>",
     "ticketOwnerId": "1350531070222794804",
@@ -14,7 +14,7 @@ window.ticketsData = [
     "users": [
       "<@1350531070222794804>"
     ],
-    "responseTime": "0m",
+    "responseTime": "27m",
     "ticketOwnerName": "agent_omar.dev",
     "ticketOwnerDisplay": "ঔ Omar Ayman ঔ"
   }
