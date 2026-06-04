@@ -689,21 +689,19 @@ export default function SettingsPage() {
   const handleSaveAll = async () => {
     setIsSaving(true);
     try {
-      const { error: appErr } = await supabase.from('settings').upsert({
-        key: 'app_settings',
+      const { error: appErr } = await supabase.from('settings').update({
         value: JSON.stringify(appSettings)
-      }, { onConflict: 'key' });
+      }).eq('key', 'app_settings');
 
       if (appErr) throw appErr;
 
-      const { error: rolesErr } = await supabase.from('settings').upsert({
-        key: 'admin_roles_permissions',
+      const { error: rolesErr } = await supabase.from('settings').update({
         value: JSON.stringify({
           roles: adminRoles,
           permissions: rolePermissions,
           updatedAt: new Date().toISOString()
         })
-      }, { onConflict: 'key' });
+      }).eq('key', 'admin_roles_permissions');
 
       if (rolesErr) throw rolesErr;
 

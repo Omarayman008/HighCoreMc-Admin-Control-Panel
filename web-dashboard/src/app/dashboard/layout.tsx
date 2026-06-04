@@ -461,14 +461,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 justifyContent: 'space-between',
                 padding: '0.8rem 1rem',
                 borderRadius: '12px',
-                color: pathname.includes('/discord') ? '#5865F2' : 'var(--text-muted)',
-                background: pathname.includes('/discord') ? 'rgba(88, 101, 242, 0.1)' : 'transparent',
+                color: (pathname.includes('/discord') && !pathname.includes('/discord/management')) ? '#5865F2' : 'var(--text-muted)',
+                background: (pathname.includes('/discord') && !pathname.includes('/discord/management')) ? 'rgba(88, 101, 242, 0.1)' : 'transparent',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                fontWeight: pathname.includes('/discord') ? 600 : 500,
+                fontWeight: (pathname.includes('/discord') && !pathname.includes('/discord/management')) ? 600 : 500,
               }}
-              onMouseEnter={(e) => { if (!pathname.includes('/discord')) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-              onMouseLeave={(e) => { if (!pathname.includes('/discord')) e.currentTarget.style.background = 'transparent' }}
+              onMouseEnter={(e) => { if (!(pathname.includes('/discord') && !pathname.includes('/discord/management'))) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+              onMouseLeave={(e) => { if (!(pathname.includes('/discord') && !pathname.includes('/discord/management'))) e.currentTarget.style.background = 'transparent' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="currentColor">

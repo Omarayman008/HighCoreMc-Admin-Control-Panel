@@ -46,3 +46,6 @@ Thumbs.db
 # Temp
 _promotions_clone/
 _old_index.html
+
+# Bot
+Bot/

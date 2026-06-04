@@ -216,6 +216,7 @@ export default function Login() {
           .from('employees')
           .update({
             name: displayName,
+            role: highestRole.name,
             section: sectionData
           })
           .eq('discord_id', data.user.id);
@@ -231,9 +232,9 @@ export default function Login() {
             dc_points: 0,
             mc_points: 0,
             tickets: 0,
-            role: 'إداري',
-            avatar: '⭐',
-            color: '#F4B942',
+            role: highestRole.name,
+            avatar: displayName.charAt(0).toUpperCase() || 'S',
+            color: highestRole.color || '#F4B942',
             section: sectionData
           });
       }

@@ -240,6 +240,7 @@ export default function StaffPage() {
     if (!selectedEmpId) return;
     setIsSubmitting(true);
     const emp = employees.find(e => e.id === selectedEmpId);
+    await supabase.from('mc_tasks').update({ completed_by: null }).eq('completed_by', selectedEmpId);
     const { error } = await supabase.from('employees').delete().eq('id', selectedEmpId);
     if (!error && emp) {
       logActivity('Delete Staff', `Deleted staff member ${emp.name}`, 'Staff');

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Ticket, Clock, User, Search, AlertCircle, Calendar, Check, X } from 'lucide-react';
+import { Ticket, Clock, User, Search, AlertCircle, Calendar, Check, X, Edit2, Star } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import CustomSelect from '@/components/CustomSelect';
 
@@ -12,6 +12,12 @@ export default function TicketsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [settings, setSettings] = useState<any>(null);
+
+  // Review & Assessment
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [reviewForm, setReviewForm] = useState({ emp_id: '', pts: 0, status: 'closed', response_time: 'N/A' });
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Search & Filters
   const [search, setSearch] = useState('');
@@ -77,7 +83,7 @@ export default function TicketsPage() {
           ...t,
           emp_name: t.emp_id ? empsMap.get(t.emp_id.toString()) || 'Unknown' : 'Unassigned'
         }));
-        setTickets(mapped);
+         setTickets(mapped);
       }
     } catch (err) {
       console.error(err);
@@ -92,6 +98,84 @@ export default function TicketsPage() {
     if (auth === 'HighCoreadmin_@@' || isAdminLocal) setIsAdmin(true);
     fetchData();
   }, [fetchData]);
+
+  const handleOpenReview = (t: any) => {
+    setSelectedTicket(t);
+    setReviewForm({
+      emp_id: t.emp_id ? t.emp_id.toString() : '',
+      pts: t.pts || 0,
+      status: t.status || 'closed',
+      response_time: t.response_time || 'N/A'
+    });
+    setShowReviewModal(true);
+  };
+
+  const handleSaveReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTicket) return;
+    setIsSubmitting(true);
+    try {
+      const oldEmpId = selectedTicket.emp_id;
+      const oldPts = selectedTicket.pts || 0;
+      const newEmpId = reviewForm.emp_id ? parseInt(reviewForm.emp_id) : null;
+      const newPts = reviewForm.pts || 0;
+
+      if (oldEmpId && oldPts > 0) {
+        const { data: oldEmp } = await supabase.from('employees').select('points, dc_points').eq('id', oldEmpId).maybeSingle();
+        if (oldEmp) {
+          const updPts = Math.max(0, (oldEmp.points || 0) - oldPts);
+          const updDc = Math.max(0, (oldEmp.dc_points || 0) - oldPts);
+          await supabase.from('employees').update({ points: updPts, dc_points: updDc }).eq('id', oldEmpId);
+        }
+      }
+
+      if (newEmpId && newPts > 0) {
+        const { data: newEmp } = await supabase.from('employees').select('points, dc_points').eq('id', newEmpId).maybeSingle();
+        if (newEmp) {
+          const updPts = (newEmp.points || 0) + newPts;
+          const updDc = (newEmp.dc_points || 0) + newPts;
+          await supabase.from('employees').update({ points: updPts, dc_points: updDc }).eq('id', newEmpId);
+        }
+      }
+
+      if (oldEmpId !== newEmpId) {
+        if (oldEmpId) {
+          const { data: oldEmp } = await supabase.from('employees').select('tickets').eq('id', oldEmpId).maybeSingle();
+          if (oldEmp) {
+            await supabase.from('employees').update({ tickets: Math.max(0, (oldEmp.tickets || 0) - 1) }).eq('id', oldEmpId);
+          }
+        }
+        if (newEmpId) {
+          const { data: newEmp } = await supabase.from('employees').select('tickets').eq('id', newEmpId).maybeSingle();
+          if (newEmp) {
+            await supabase.from('employees').update({ tickets: (newEmp.tickets || 0) + 1 }).eq('id', newEmpId);
+          }
+        }
+      }
+
+      await supabase.from('tickets').update({
+        emp_id: newEmpId,
+        pts: newPts,
+        status: reviewForm.status,
+        response_time: reviewForm.response_time
+      }).eq('id', selectedTicket.id);
+
+      const adminName = localStorage.getItem('adminUsername') || 'Administrator';
+      await supabase.from('activity_log').insert({
+        action_type: 'Review Ticket',
+        category: 'Tickets',
+        details: `Reviewed ticket #${selectedTicket.ticket_id} (Points: ${newPts} PTS)`,
+        user_name: adminName
+      });
+
+      setShowReviewModal(false);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const filteredTickets = tickets.filter(t => {
     const matchesSearch =
@@ -182,6 +266,7 @@ export default function TicketsPage() {
                   <th style={{ padding: '1rem' }}>Points Awarded</th>
                   <th style={{ padding: '1rem' }}>Response Time</th>
                   <th style={{ padding: '1rem' }}>Created At</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -189,7 +274,7 @@ export default function TicketsPage() {
                   <tr key={t.id || idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                     <td style={{ padding: '1rem', fontWeight: 700 }}>
                       <a 
-                        href={`https://wano-mc.github.io/Promotions-system/transcripts/${t.ticket_id}.html`}
+                        href={`https://highcoremc-production.up.railway.app/view/transcript/${(t.ticket_id || '').replace(/\D/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ color: '#5865F2', textDecoration: 'none' }}
@@ -242,11 +327,36 @@ export default function TicketsPage() {
                         {new Date(t.created_at).toLocaleDateString('en-GB')}
                       </div>
                     </td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>
+                      <button
+                        onClick={() => handleOpenReview(t)}
+                        title="Review Ticket"
+                        style={{
+                          background: 'rgba(56, 189, 248, 0.1)',
+                          border: '1px solid rgba(56, 189, 248, 0.2)',
+                          color: '#38bdf8',
+                          padding: '0.4rem 0.8rem',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.4rem',
+                          fontWeight: 600,
+                          fontSize: '0.8rem',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.2)' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.1)' }}
+                      >
+                        <Edit2 size={12} />
+                        Review
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {filteredTickets.length === 0 && (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>No tickets logs found.</td>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>No tickets logs found.</td>
                   </tr>
                 )}
               </tbody>
@@ -254,6 +364,130 @@ export default function TicketsPage() {
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      {showReviewModal && selectedTicket && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <form
+            onSubmit={handleSaveReview}
+            style={{
+              background: 'var(--bg)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '16px',
+              padding: '2rem',
+              width: '450px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.5rem'
+            }}
+          >
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+              <Star size={22} color="var(--primary)" /> Review & Assess Ticket
+            </h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Ticket ID</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={`#${selectedTicket.ticket_id}`}
+                  style={{ background: 'rgba(255,255,255,0.03)', opacity: 0.7 }}
+                  disabled
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Status</label>
+                <CustomSelect
+                  value={reviewForm.status}
+                  onChange={val => setReviewForm(prev => ({ ...prev, status: val }))}
+                  options={[
+                    { value: 'open', label: 'Open' },
+                    { value: 'closed', label: 'Closed' }
+                  ]}
+                  placeholder="Select Status"
+                  activeColor="var(--primary)"
+                  activeBg="rgba(139, 92, 246, 0.15)"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Handled By Staff *</label>
+              <CustomSelect
+                value={reviewForm.emp_id}
+                onChange={val => setReviewForm(prev => ({ ...prev, emp_id: val }))}
+                options={[
+                  { value: '', label: 'Unassigned' },
+                  ...employees.map(e => ({ value: e.id.toString(), label: e.name }))
+                ]}
+                placeholder="Select Staff Member"
+                activeColor="var(--primary)"
+                activeBg="rgba(139, 92, 246, 0.15)"
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Points Awarded</label>
+                <input
+                  type="number"
+                  className="input-field"
+                  value={reviewForm.pts}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setReviewForm(prev => ({ ...prev, pts: val === '' ? 0 : parseInt(val) || 0 }));
+                  }}
+                  style={{ background: 'rgba(0,0,0,0.2)' }}
+                  min="0"
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Response Time</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  value={reviewForm.response_time}
+                  onChange={e => setReviewForm(prev => ({ ...prev, response_time: e.target.value }))}
+                  style={{ background: 'rgba(0,0,0,0.2)' }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => setShowReviewModal(false)}
+                disabled={isSubmitting}
+                style={{
+                  padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid var(--glass-border)',
+                  background: 'transparent', color: 'var(--foreground)', cursor: 'pointer', fontWeight: 600
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                style={{
+                  padding: '0.6rem 1.2rem', borderRadius: '8px', border: 'none',
+                  background: 'var(--primary)', color: 'white', cursor: 'pointer', fontWeight: 700
+                }}
+              >
+                {isSubmitting ? 'Saving...' : 'Save Assessment'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
