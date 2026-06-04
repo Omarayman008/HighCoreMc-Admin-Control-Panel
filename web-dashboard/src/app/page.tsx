@@ -16,6 +16,8 @@ export default function Login() {
   const [confirmConfig, setConfirmConfig] = useState<{ isOpen: boolean, type: 'danger' | 'success' | 'info', title: string, message: string, onConfirm: () => void }>({
     isOpen: false, type: 'danger', title: '', message: '', onConfirm: () => { }
   });
+  const [redirectTo, setRedirectTo] = useState('/dashboard');
+  const [isLoggingInDiscord, setIsLoggingInDiscord] = useState(false);
 
   const DEFAULT_MAP: Record<string, Record<string, string>> = {
     login: {
@@ -67,13 +69,36 @@ export default function Login() {
       }
     }
     loadSettings();
+
+    const params = new URLSearchParams(window.location.search);
+    const redir = params.get('redirect_to');
+    if (redir) {
+      setRedirectTo(redir);
+    }
+
+    const err = params.get('error');
+    if (err === 'login_required') {
+      setConfirmConfig({
+        isOpen: true,
+        type: 'danger',
+        title: 'Authentication Required',
+        message: 'Please log in first to access this page.',
+        onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
+      });
+    }
+
+    const code = params.get('code');
+    if (code) {
+      handleDiscordCallback(code);
+    }
   }, []);
 
   // Discord OAuth Logic
   const handleDiscordLogin = () => {
-    const DISCORD_CLIENT_ID = '1480381951352504371';
-
+    const DISCORD_CLIENT_ID = '1508870031562244176';
     const REDIRECT_URI = 'https://admin.highcores.com/';
+
+    localStorage.setItem('redirect_to', redirectTo);
 
     const params = new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
@@ -83,6 +108,101 @@ export default function Login() {
     });
 
     window.location.href = `https://discord.com/oauth2/authorize?${params.toString()}`;
+  };
+
+  const handleDiscordCallback = async (code: string) => {
+    setIsLoggingInDiscord(true);
+    try {
+      router.replace(window.location.pathname);
+
+      const response = await fetch('/discord/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Failed to authenticate with Discord');
+      }
+
+      const data = await response.json();
+
+      const { data: settingsData } = await supabase.from('settings').select('*');
+      const appRow = settingsData?.find(s => s.key === 'app_settings');
+      const rolesRow = settingsData?.find(s => s.key === 'admin_roles_permissions');
+
+      let adminPass = 'HighCoreadmin_@@';
+      let modPass = 'HighCoremod_@@';
+      let staffPass = 'HighCorestaff_@@';
+
+      if (appRow?.value) {
+        const parsed = JSON.parse(appRow.value);
+        if (parsed?.security?.adminPassword) adminPass = parsed.security.adminPassword;
+        if (parsed?.security?.modPassword) modPass = parsed.security.modPassword;
+        if (parsed?.security?.staffPassword) staffPass = parsed.security.staffPassword;
+      }
+
+      let dashboardRoles = [];
+      let rolePermissions: Record<string, string[]> = {};
+
+      if (rolesRow?.value) {
+        const parsed = JSON.parse(rolesRow.value);
+        dashboardRoles = parsed.roles || [];
+        rolePermissions = parsed.permissions || {};
+      }
+
+      const userDiscordRoleIds = data.guild.roles.map((r: any) => r.id);
+      const matchingRoles = dashboardRoles.filter((r: any) => r.enabled && userDiscordRoleIds.includes(r.id));
+
+      if (matchingRoles.length === 0) {
+        throw new Error('Access Denied: You do not have any authorized staff roles on the Discord server.');
+      }
+
+      matchingRoles.sort((a: any, b: any) => a.priority - b.priority);
+      const highestRole = matchingRoles[0];
+      const permissions = rolePermissions[highestRole.id] || [];
+
+      let authVal = staffPass;
+      let roleName = 'Staff';
+
+      const hasAdminPerm = permissions.includes('view_settings') || permissions.includes('view_logs') || permissions.includes('edit_settings');
+      const hasModPerm = permissions.includes('review_reports') || permissions.includes('edit_whitelist') || permissions.includes('add_points');
+
+      if (hasAdminPerm) {
+        authVal = adminPass;
+        roleName = 'Administrator';
+      } else if (hasModPerm) {
+        authVal = modPass;
+        roleName = 'Moderator';
+      }
+
+      localStorage.setItem('adminAuth', authVal);
+      localStorage.setItem('adminUsername', data.guild.nickname || data.user.globalName || data.user.username);
+      localStorage.setItem('discordUser', JSON.stringify(data.user));
+
+      await supabase.from('activity_log').insert({
+        action_type: 'Discord Login',
+        category: 'Auth',
+        details: `Logged in via Discord as ${data.user.username} (${roleName}).`,
+        user_name: data.guild.nickname || data.user.globalName || data.user.username
+      });
+
+      const targetRedir = localStorage.getItem('redirect_to') || redirectTo || '/dashboard';
+      localStorage.removeItem('redirect_to');
+      router.push(targetRedir);
+    } catch (err: any) {
+      console.error(err);
+      setConfirmConfig({
+        isOpen: true,
+        type: 'danger',
+        title: 'Discord Authentication Failed',
+        message: err.message || 'An error occurred during Discord login.',
+        onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
+      });
+    } finally {
+      setIsLoggingInDiscord(false);
+    }
   };
 
   const handleRoleLogin = (e: React.FormEvent) => {
@@ -112,7 +232,7 @@ export default function Login() {
     if (isCorrect) {
       localStorage.setItem('adminAuth', authVal);
       localStorage.setItem('adminUsername', username);
-      router.push('/dashboard');
+      router.push(redirectTo || '/dashboard');
     } else {
       setConfirmConfig({
         isOpen: true,
@@ -129,6 +249,31 @@ export default function Login() {
     { id: 'moderator', name: settings?.login?.textMod || 'Moderator', icon: <Shield size={20} style={{ color: settings?.login?.colorMod || '#51cf66' }} /> },
     { id: 'staff', name: settings?.login?.textStaff || 'Staff', icon: <ShieldCheck size={20} style={{ color: settings?.login?.colorStaff || '#4dabf7' }} /> },
   ];
+
+  if (isLoggingInDiscord) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', width: '100%', alignItems: 'center', justifyContent: 'center', background: '#0a0e1a', color: '#fff' }}>
+        <div style={{ textAlign: 'center' }}>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '4px solid rgba(255,255,255,0.1)',
+            borderTopColor: '#5865F2',
+            borderRadius: '50%',
+            margin: '0 auto 1rem',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <p style={{ fontFamily: 'Tajawal, sans-serif' }}>Logging in with Discord...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

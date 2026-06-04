@@ -2,7 +2,7 @@
 
 import { Home, Users, Settings, LogOut, BarChart2, Plus, UserPlus, Moon, Sun, Shield, Award, ChevronDown, Activity, Pickaxe, MessageSquare, Ticket } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
@@ -49,7 +49,9 @@ function CursorGlow() {
 // Sidebar
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [theme, setTheme] = useState('dark');
   const [isMcOpen, setIsMcOpen] = useState(false);
   const [isDcOpen, setIsDcOpen] = useState(false);
@@ -58,9 +60,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarLogo, setSidebarLogo] = useState<any>(null);
 
   useEffect(() => {
-    const auth = localStorage.getItem('adminAuth');
-    if (auth === 'HighCoreadmin_@@') setIsAdmin(true);
+    const checkAuth = async () => {
+      const auth = localStorage.getItem('adminAuth');
 
+      let adminPass = 'HighCoreadmin_@@';
+      let modPass = 'HighCoremod_@@';
+      let staffPass = 'HighCorestaff_@@';
+
+      try {
+        const { data } = await supabase.from('settings').select('value').eq('key', 'app_settings').maybeSingle();
+        if (data && data.value) {
+          const parsed = JSON.parse(data.value);
+          if (parsed?.security?.adminPassword) adminPass = parsed.security.adminPassword;
+          if (parsed?.security?.modPassword) modPass = parsed.security.modPassword;
+          if (parsed?.security?.staffPassword) staffPass = parsed.security.staffPassword;
+        }
+      } catch (err) {
+        console.error("Error loading settings for auth check:", err);
+      }
+
+      if (!auth || (auth !== adminPass && auth !== modPass && auth !== staffPass)) {
+        const currentPath = window.location.pathname + window.location.search;
+        router.push(`/?error=login_required&redirect_to=${encodeURIComponent(currentPath)}`);
+      } else {
+        setIsAuthorized(true);
+        if (auth === adminPass) {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      }
+    };
+
+    checkAuth();
+  }, [pathname, router]);
+
+  useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     setTheme(savedTheme);
     if (savedTheme === 'light') document.body.classList.add('light-theme');
@@ -265,6 +300,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: settings?.tabs?.employees || 'Staff', icon: <Users size={20} />, path: '/dashboard/staff' },
     { name: settings?.tabs?.ranks || 'Ranks', icon: <Award size={20} />, path: '/dashboard/ranks' },
   ];
+
+  if (isAuthorized === null) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', width: '100%', alignItems: 'center', justifyContent: 'center', background: '#0a0e1a', color: '#fff' }}>
+        <div style={{ textAlign: 'center' }}>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '4px solid rgba(255,255,255,0.1)',
+            borderTopColor: '#38bdf8',
+            borderRadius: '50%',
+            margin: '0 auto 1rem',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <p style={{ fontFamily: 'Tajawal, sans-serif' }}>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%', background: 'var(--bg)', color: 'var(--text)' }}>
@@ -479,8 +539,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 transition: 'all 0.3s ease-in-out'
               }}>
                 {[
-                  { name: 'Settings', path: '/dashboard/management/settings', icon: <Settings size={16} /> },
-                  { name: 'Logs', path: '/dashboard/management/logs', icon: <Activity size={16} /> }
+                  { name: 'Settings', path: '/dashboard/discord/management/settings', icon: <Settings size={16} /> },
+                  { name: 'Logs', path: '/dashboard/discord/management/logs', icon: <Activity size={16} /> }
                 ].map(sub => {
                   const isSubActive = pathname === sub.path;
                   return (
