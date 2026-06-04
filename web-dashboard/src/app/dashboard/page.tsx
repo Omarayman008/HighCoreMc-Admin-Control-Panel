@@ -133,7 +133,7 @@ export default function Dashboard() {
             .select('*')
             .in('category', ['Points', 'Ranks', 'Reports', 'Events', 'Tasks', 'Announcements'])
             .order('created_at', { ascending: false })
-            .limit(5);
+            .limit(15);
         if (actsData && actsData.length > 0) {
           setActivities(actsData);
         } else {
@@ -197,7 +197,7 @@ export default function Dashboard() {
             .select('*')
             .in('category', ['Points', 'Ranks', 'Reports', 'Events', 'Tasks', 'Announcements'])
             .order('created_at', { ascending: false })
-            .limit(5);
+            .limit(15);
         if (actsData) setActivities(actsData);
 
         setShowPointsModal(false);
@@ -246,9 +246,9 @@ export default function Dashboard() {
         user_name: username,
         created_at: new Date().toISOString()
       });
-      if (activitiesArray.length > 10) activitiesArray = activitiesArray.slice(0, 10);
+      if (activitiesArray.length > 30) activitiesArray = activitiesArray.slice(0, 30);
       await supabase.from('settings').upsert({ key: 'activities', value: JSON.stringify(activitiesArray) }, { onConflict: 'key' });
-      setActivities(activitiesArray.slice(0, 5));
+      setActivities(activitiesArray.slice(0, 15));
     }
     await supabase.from('settings').upsert({ key: 'announcements', value: JSON.stringify(parsed) }, { onConflict: 'key' });
 
@@ -546,7 +546,7 @@ export default function Dashboard() {
             <div style={{ width: '100%', flex: 1, minHeight: '260px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 {chartType === 'bar' ? (
-                  <BarChart data={leaderboard} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                  <BarChart data={leaderboard.length === 1 ? [{ name: '', points: 0 }, ...leaderboard] : leaderboard} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                     <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
                     <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
@@ -561,7 +561,7 @@ export default function Dashboard() {
                     </Bar>
                   </BarChart>
                 ) : (
-                  <AreaChart data={leaderboard} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                  <AreaChart data={leaderboard.length === 1 ? [{ name: '', points: 0 }, ...leaderboard] : leaderboard} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorPts" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8}/>
@@ -590,7 +590,15 @@ export default function Dashboard() {
             <h3 style={{ color: 'var(--foreground)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', fontWeight: 700 }}>
               <Radio size={20} color="#ec4899" /> Recent Activities
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', position: 'relative' }}>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '1.2rem', 
+              position: 'relative',
+              maxHeight: '320px',
+              overflowY: 'auto',
+              paddingRight: '0.5rem'
+            }}>
               <div style={{ position: 'absolute', left: '7px', top: '10px', bottom: '10px', width: '2px', background: 'rgba(255,255,255,0.1)' }}></div>
               
               <AnimatePresence>
@@ -602,19 +610,30 @@ export default function Dashboard() {
                     style={{ display: 'flex', gap: '1rem', position: 'relative', paddingLeft: '1.5rem', cursor: 'default' }}
                   >
                     <div style={{ position: 'absolute', left: '3px', top: '6px', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 10px var(--primary)' }}></div>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1, minWidth: 0 }}>
                       <div style={{ color: 'var(--foreground)', fontSize: '0.95rem' }}>
                         <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{act.user_name || 'System'}</span> {translateArabicLog(act.action_type)}
                       </div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.3rem', fontWeight: 500 }}>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 500 }}>
                         {new Date(act.created_at).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </div>
+                      {act.details && (
+                        <div style={{ 
+                          color: 'var(--primary)', 
+                          fontWeight: 500, 
+                          fontSize: '0.9rem', 
+                          background: 'var(--glass-highlight)', 
+                          padding: '0.6rem 0.8rem', 
+                          borderRadius: '10px', 
+                          marginTop: '0.3rem',
+                          wordBreak: 'break-word',
+                          border: '1px solid var(--glass-border)',
+                          width: '100%'
+                        }}>
+                          {translateArabicLog(act.details)}
+                        </div>
+                      )}
                     </div>
-                    {act.details && (
-                      <div style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.95rem', background: 'var(--glass-highlight)', padding: '0.2rem 0.6rem', borderRadius: '8px', height: 'fit-content' }}>
-                        {translateArabicLog(act.details)}
-                      </div>
-                    )}
                   </motion.div>
                 )) : (
                   <p style={{ color: 'var(--text-muted)', paddingLeft: '1.5rem' }}>No recent activities.</p>
@@ -644,7 +663,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <label style={{ display: 'block', color: 'var(--foreground)', marginBottom: '0.5rem', fontWeight: 600 }}>Initial Points</label>
-                  <input type="number" required value={newStaffPoints} onChange={e => setNewStaffPoints(Number(e.target.value))} style={{ width: '100%', padding: '1rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--foreground)' }} />
+                  <input type="number" required value={newStaffPoints} onChange={e => setNewStaffPoints(e.target.value === '' ? '' as any : Number(e.target.value))} style={{ width: '100%', padding: '1rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--foreground)' }} />
                 </div>
                 <button disabled={isSubmitting} type="submit" style={{ background: '#34d399', color: 'var(--foreground)', border: 'none', padding: '1rem', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', marginTop: '0.5rem' }}>{isSubmitting ? 'Saving...' : 'Add Staff'}</button>
               </form>
@@ -728,7 +747,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <label style={{ display: 'block', color: 'var(--foreground)', marginBottom: '0.5rem', fontWeight: 600 }}>Amount</label>
-                  <input type="number" required min="1" value={pointsAmount} onChange={e => setPointsAmount(Number(e.target.value))} style={{ width: '100%', padding: '1rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--foreground)' }} />
+                  <input type="number" required min="1" value={pointsAmount} onChange={e => setPointsAmount(e.target.value === '' ? '' as any : Number(e.target.value))} style={{ width: '100%', padding: '1rem', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'var(--foreground)' }} />
                 </div>
                 <button disabled={isSubmitting} type="submit" style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '1rem', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', marginTop: '0.5rem' }}>{isSubmitting ? 'Saving...' : 'Confirm'}</button>
               </form>

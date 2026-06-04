@@ -196,12 +196,27 @@ export default function Login() {
         .eq('discord_id', data.user.id)
         .maybeSingle();
 
+      let currentRankOverride = null;
+      if (existingEmp && existingEmp.section) {
+        try {
+          const parsed = JSON.parse(existingEmp.section);
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            currentRankOverride = parsed.rank_override || null;
+          }
+        } catch (err) {}
+      }
+
+      const sectionData = JSON.stringify({
+        job_titles: jobTitles,
+        rank_override: currentRankOverride
+      });
+
       if (existingEmp) {
         await supabase
           .from('employees')
           .update({
             name: displayName,
-            job_titles: jobTitles
+            section: sectionData
           })
           .eq('discord_id', data.user.id);
       } else {
@@ -219,8 +234,7 @@ export default function Login() {
             role: 'إداري',
             avatar: '⭐',
             color: '#F4B942',
-            rank_override: null,
-            job_titles: jobTitles
+            section: sectionData
           });
       }
 

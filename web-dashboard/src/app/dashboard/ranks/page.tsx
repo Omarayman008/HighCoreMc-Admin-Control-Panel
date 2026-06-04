@@ -99,7 +99,24 @@ export default function RanksPage() {
     if (rData) setRanks(rData);
 
     const { data: eData } = await supabase.from('employees').select('*');
-    if (eData) setEmployees(eData);
+    if (eData) {
+      const normalized = eData.map(e => {
+        let rank_override = null;
+        if (e.section) {
+          try {
+            const parsed = JSON.parse(e.section);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+              rank_override = parsed.rank_override || null;
+            }
+          } catch (err) {}
+        }
+        return {
+          ...e,
+          rank_override
+        };
+      });
+      setEmployees(normalized);
+    }
     
     setIsLoading(false);
   };

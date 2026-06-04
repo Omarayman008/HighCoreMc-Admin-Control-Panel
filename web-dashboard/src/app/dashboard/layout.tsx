@@ -106,7 +106,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (pathname.includes('/minecraft')) {
       setIsMcOpen(true);
     }
-    if (pathname.includes('/discord')) {
+    if (pathname.includes('/discord') && !pathname.includes('/discord/management')) {
       setIsDcOpen(true);
     }
     if (pathname.includes('/management')) {

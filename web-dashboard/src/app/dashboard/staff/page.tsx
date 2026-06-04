@@ -131,11 +131,26 @@ export default function StaffPage() {
 
     const { data: empsData } = await supabase.from('employees').select('*').order('points', { ascending: false });
     if (empsData) {
-      // Normalize job_titles to array if null
-      const normalized = empsData.map(e => ({
-        ...e,
-        job_titles: Array.isArray(e.job_titles) ? e.job_titles : []
-      }));
+      const normalized = empsData.map(e => {
+        let job_titles = [];
+        let rank_override = null;
+        if (e.section) {
+          try {
+            const parsed = JSON.parse(e.section);
+            if (Array.isArray(parsed)) {
+              job_titles = parsed;
+            } else if (parsed && typeof parsed === 'object') {
+              job_titles = parsed.job_titles || [];
+              rank_override = parsed.rank_override || null;
+            }
+          } catch (err) {}
+        }
+        return {
+          ...e,
+          job_titles,
+          rank_override
+        };
+      });
       setEmployees(normalized);
     }
     setIsLoading(false);
@@ -182,6 +197,11 @@ export default function StaffPage() {
       }
     }
 
+    const sectionData = JSON.stringify({
+      job_titles: editingEmployee ? (editingEmployee.job_titles || []) : [],
+      rank_override: staffForm.rank_override || null
+    });
+
     if (editingEmployee) {
       const { error } = await supabase.from('employees').update({
         name: staffForm.name,
@@ -190,7 +210,7 @@ export default function StaffPage() {
         avatar: staffForm.avatar,
         color: staffForm.color,
         points: finalPoints,
-        rank_override: null
+        section: sectionData
       }).eq('id', editingEmployee.id);
       if (!error) {
         logActivity('Edit Staff', `Edited data for ${staffForm.name}`, 'Staff');
@@ -205,8 +225,7 @@ export default function StaffPage() {
         avatar: staffForm.avatar,
         color: staffForm.color,
         points: finalPoints,
-        rank_override: null,
-        job_titles: []
+        section: sectionData
       });
       if (!error) {
         logActivity('Add Staff', `Added new staff member ${staffForm.name}`, 'Staff');
@@ -263,7 +282,11 @@ export default function StaffPage() {
     if (!emp) return;
 
     const newJobs = [...(emp.job_titles || []), { title: newJobTitle.trim(), is_main: (emp.job_titles?.length || 0) === 0 }];
-    const { error } = await supabase.from('employees').update({ job_titles: newJobs }).eq('id', emp.id);
+    const sectionData = JSON.stringify({
+      job_titles: newJobs,
+      rank_override: emp.rank_override || null
+    });
+    const { error } = await supabase.from('employees').update({ section: sectionData }).eq('id', emp.id);
     if (!error) {
       setNewJobTitle('');
       fetchData();
@@ -277,7 +300,11 @@ export default function StaffPage() {
 
     const newJobs = emp.job_titles.filter(j => j.title !== title);
     if (newJobs.length > 0 && !newJobs.some(j => j.is_main)) newJobs[0].is_main = true;
-    await supabase.from('employees').update({ job_titles: newJobs }).eq('id', emp.id);
+    const sectionData = JSON.stringify({
+      job_titles: newJobs,
+      rank_override: emp.rank_override || null
+    });
+    await supabase.from('employees').update({ section: sectionData }).eq('id', emp.id);
     fetchData();
   };
 
@@ -287,7 +314,11 @@ export default function StaffPage() {
     if (!emp) return;
 
     const newJobs = emp.job_titles.map(j => ({ ...j, is_main: j.title === title }));
-    await supabase.from('employees').update({ job_titles: newJobs }).eq('id', emp.id);
+    const sectionData = JSON.stringify({
+      job_titles: newJobs,
+      rank_override: emp.rank_override || null
+    });
+    await supabase.from('employees').update({ section: sectionData }).eq('id', emp.id);
     fetchData();
   };
 
@@ -538,7 +569,7 @@ export default function StaffPage() {
                 {!editingEmployee && (
                   <div>
                     <label style={{ display: 'block', color: 'var(--foreground)', marginBottom: '0.5rem', fontWeight: 600 }}>Initial Points</label>
-                    <input type="number" required value={staffForm.points} onChange={e => setStaffForm({...staffForm, points: Number(e.target.value)})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
+                    <input type="number" required value={staffForm.points} onChange={e => setStaffForm({...staffForm, points: e.target.value === '' ? '' as any : Number(e.target.value)})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
                   </div>
                 )}
                 <div>
@@ -627,7 +658,7 @@ export default function StaffPage() {
                   </div>
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', color: 'var(--foreground)', marginBottom: '0.5rem', fontWeight: 600 }}>Points</label>
-                    <input type="number" required min="1" value={pointsForm.amount} onChange={e => setPointsForm({...pointsForm, amount: Number(e.target.value)})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
+                    <input type="number" required min="1" value={pointsForm.amount} onChange={e => setPointsForm({...pointsForm, amount: e.target.value === '' ? '' as any : Number(e.target.value)})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
                   </div>
                 </div>
                 <div style={{ flex: 1 }}>
