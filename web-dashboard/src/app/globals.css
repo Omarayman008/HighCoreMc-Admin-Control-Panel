@@ -1,0 +1,385 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --background: #111835;
+  --foreground: #fbfcfc;
+  --text-muted: #8fa1c4;
+  --primary: #0248c1;
+  --primary-hover: #023899;
+  --primary-glow: rgba(2, 72, 193, 0.5);
+  --accent: #f8d613;
+  --discord: #5865F2;
+  --discord-hover: #4752C4;
+  --discord-glow: rgba(88, 101, 242, 0.4);
+  --glass-bg: rgba(17, 24, 53, 0.7);
+  --glass-border: rgba(251, 252, 252, 0.1);
+  --glass-highlight: rgba(251, 252, 252, 0.15);
+  --card-bg: rgba(0, 0, 0, 0.25);
+}
+
+.light-theme {
+  --background: #fbfcfc;
+  --foreground: #111835;
+  --text-muted: #536485;
+  --primary: #0248c1;
+  --primary-hover: #023899;
+  --accent: #f8d613;
+  --glass-bg: rgba(251, 252, 252, 0.8);
+  --glass-border: rgba(17, 24, 53, 0.1);
+  --glass-highlight: rgba(17, 24, 53, 0.05);
+  --card-bg: rgba(17, 24, 53, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.recharts-tooltip-cursor {
+  fill: rgba(255, 255, 255, 0.05);
+}
+
+/* React DatePicker Dark Theme Override */
+.react-datepicker {
+  background-color: var(--background) !important;
+  border: 1px solid var(--glass-border) !important;
+  font-family: 'Outfit', sans-serif !important;
+  color: var(--foreground) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+.react-datepicker__header {
+  background-color: rgba(0,0,0,0.2) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  border-top-left-radius: 10px !important;
+  border-top-right-radius: 10px !important;
+}
+.react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker_year-header, .react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
+  color: var(--foreground) !important;
+}
+.react-datepicker__day:hover, .react-datepicker__month-text:hover, .react-datepicker__quarter-text:hover, .react-datepicker__year-text:hover {
+  background-color: rgba(255,255,255,0.1) !important;
+}
+.react-datepicker__day--selected, .react-datepicker__day--in-selecting-range, .react-datepicker__day--in-range, .react-datepicker__month-text--selected, .react-datepicker__month-text--in-selecting-range, .react-datepicker__month-text--in-range, .react-datepicker__quarter-text--selected, .react-datepicker__quarter-text--in-selecting-range, .react-datepicker__quarter-text--in-range, .react-datepicker__year-text--selected, .react-datepicker__year-text--in-selecting-range, .react-datepicker__year-text--in-range {
+  background-color: #55bb55 !important;
+  color: #fff !important;
+}
+.react-datepicker__time-container {
+  border-left: 1px solid var(--glass-border) !important;
+}
+.react-datepicker__time-container .react-datepicker__time {
+  background-color: var(--background) !important;
+}
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item {
+  color: var(--foreground) !important;
+}
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {
+  background-color: rgba(255,255,255,0.1) !important;
+}
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected {
+  background-color: #55bb55 !important;
+  color: #fff !important;
+}
+.react-datepicker-popper[data-placement^=bottom] .react-datepicker__triangle::before, .react-datepicker-popper[data-placement^=bottom] .react-datepicker__triangle::after {
+  border-bottom-color: var(--background) !important;
+}
+.react-datepicker-popper[data-placement^=top] .react-datepicker__triangle::before, .react-datepicker-popper[data-placement^=top] .react-datepicker__triangle::after {
+  border-top-color: var(--background) !important;
+}
+
+
+/* Background animated mesh gradient */
+.bg-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.15), transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.15), transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.1), transparent 50%);
+  z-index: -1;
+  animation: pulseBg 10s ease-in-out infinite alternate;
+}
+
+@keyframes pulseBg {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.05); opacity: 1; }
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 2rem;
+  z-index: 1;
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-top: 1px solid var(--glass-highlight); /* Inner light reflection */
+  border-radius: 28px;
+  padding: 3rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add a subtle glow behind the panel */
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(from 0deg, transparent 0%, rgba(139, 92, 246, 0.1) 25%, transparent 50%);
+  animation: rotateGlow 8s linear infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes rotateGlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to right, #ffffff, #c4b5fd, #7dd3fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  text-align: center;
+  color: #a1a1aa;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: #d4d4d8;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+.btn.active {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: var(--primary);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), #a855f7);
+  border: none;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 8px 20px -6px var(--primary-glow);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-hover), #9333ea);
+  box-shadow: 0 12px 25px -6px var(--primary-glow);
+  transform: translateY(-2px);
+}
+
+.btn-discord {
+  background: linear-gradient(135deg, var(--discord), #6370f4);
+  border: none;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 8px 20px -6px var(--discord-glow);
+}
+
+.btn-discord:hover {
+  background: linear-gradient(135deg, var(--discord-hover), #4e5bdc);
+  box-shadow: 0 12px 25px -6px var(--discord-glow);
+  transform: translateY(-2px);
+}
+
+.input-field {
+  width: 100%;
+  padding: 1.1rem 1.2rem;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--glass-border);
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.input-field:focus {
+  border-color: var(--primary);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.input-field::placeholder {
+  color: #71717a;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 0.5rem 0;
+  color: #71717a;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.divider:not(:empty)::before {
+  margin-right: 1rem;
+}
+
+.divider:not(:empty)::after {
+  margin-left: 1rem;
+}
+
+/* Rank Badges CSS */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  width: fit-content;
+}
+
+.rank-1 {
+  background: rgba(167, 139, 250, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  color: #A78BFA;
+  box-shadow: 0 0 10px rgba(167, 139, 250, 0.1);
+}
+
+.rank-2 {
+  background: rgba(34, 211, 238, 0.15);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  color: #22D3EE;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.1);
+}
+
+.rank-3 {
+  background: rgba(251, 146, 60, 0.15);
+  border: 1px solid rgba(251, 146, 60, 0.3);
+  color: #FB923C;
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.1);
+}
+
+.rank-4 {
+  background: rgba(96, 165, 250, 0.15);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  color: #60A5FA;
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.1);
+}
+
+.rank-5 {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: #A855F7;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.1);
+}
+
+.rank-admin {
+  background: rgba(252, 211, 77, 0.15);
+  border: 1px solid rgba(252, 211, 77, 0.5);
+  color: #FCD34D;
+  box-shadow: 0 0 15px rgba(252, 211, 77, 0.3);
+  animation: rankAdminGlow 3s ease-in-out infinite;
+}
+
+@keyframes rankAdminGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(252, 211, 77, 0.3);
+    border-color: rgba(252, 211, 77, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(252, 211, 77, 0.6);
+    border-color: rgba(252, 211, 77, 0.8);
+  }
+}
