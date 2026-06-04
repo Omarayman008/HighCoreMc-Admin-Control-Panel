@@ -151,6 +151,25 @@ export default function StaffPage() {
           rank_override
         };
       });
+
+      const getRankForEmp = (emp: any) => {
+        if (emp.rank_override) {
+          const found = (ranksData || []).find((r: any) => r.name === emp.rank_override);
+          if (found) return found;
+        }
+        const found = (ranksData || []).find((r: any) => emp.points >= r.min_pts && emp.points <= r.max_pts);
+        return found || (ranksData && ranksData[0]) || { sort_order: 999 };
+      };
+
+      normalized.sort((a, b) => {
+        const rankA = getRankForEmp(a);
+        const rankB = getRankForEmp(b);
+        if (rankA.sort_order !== rankB.sort_order) {
+          return rankA.sort_order - rankB.sort_order; // Lower sort_order comes first (highest priority)
+        }
+        return b.points - a.points; // If same rank, highest points first
+      });
+
       setEmployees(normalized);
     }
     setIsLoading(false);

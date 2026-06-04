@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, ShieldAlert, ShieldCheck, Lock, LogIn } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import ConfirmModal from '@/components/ConfirmModal';
 import { supabase } from '@/lib/supabase';
 import './globals.css';
@@ -20,50 +21,22 @@ export default function Login() {
   const [isLoggingInDiscord, setIsLoggingInDiscord] = useState(false);
   const callbackCalled = useRef(false);
 
-  const DEFAULT_MAP: Record<string, Record<string, string>> = {
-    login: {
-      title: 'HighCoreMc',
-      welcome: 'Welcome Back',
-      iconAdmin: 'ShieldAlert',
-      textAdmin: 'Staff Manager',
-      iconMod: 'Shield',
-      textMod: 'Moderator',
-      iconStaff: 'Users',
-      textStaff: 'Staff'
-    }
-  };
-
-  const cleanArabicEmoji = (data: any): any => {
-    if (!data || typeof data !== 'object') return data;
-    const result = Array.isArray(data) ? [...data] : { ...data };
-    for (const groupKey in data) {
-      const groupVal = data[groupKey];
-      if (typeof groupVal === 'object' && groupVal !== null) {
-        result[groupKey] = { ...groupVal };
-        for (const key in groupVal) {
-          const val = groupVal[key];
-          if (typeof val === 'string') {
-            const hasArabic = /[\u0600-\u06FF]/.test(val);
-            const hasEmojiSphere = /[🔵🟡🟢✅]/.test(val);
-            if (hasArabic || hasEmojiSphere) {
-              if (DEFAULT_MAP[groupKey] && DEFAULT_MAP[groupKey][key] !== undefined) {
-                result[groupKey][key] = DEFAULT_MAP[groupKey][key];
-              }
-            }
-          }
-        }
-      }
-    }
-    return result;
-  };
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
+    const adminAuth = localStorage.getItem('adminAuth');
+    if (adminAuth) {
+      router.push('/dashboard');
+      return;
+    }
+    setIsCheckingAuth(false);
+
     async function loadSettings() {
       try {
         const { data } = await supabase.from('settings').select('value').eq('key', 'app_settings').maybeSingle();
         if (data && data.value) {
           const parsed = JSON.parse(data.value);
-          setSettings(cleanArabicEmoji(parsed));
+          setSettings(parsed);
         }
       } catch (err) {
         console.error(err);
@@ -94,6 +67,14 @@ export default function Login() {
       handleDiscordCallback(code);
     }
   }, []);
+
+  if (isCheckingAuth) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--bg-color)', color: 'var(--foreground)' }}>
+        Loading...
+      </div>
+    );
+  }
 
   // Discord OAuth Logic
   const handleDiscordLogin = () => {
@@ -132,7 +113,11 @@ export default function Login() {
 
       const { data: settingsData } = await supabase.from('settings').select('*');
       const appRow = settingsData?.find(s => s.key === 'app_settings');
-      const rolesRow = settingsData?.find(s => s.key === 'admin_roles_permissions');
+      
+      const { data: rolesData, error: rolesError } = await supabase.from('roles').select('*').order('priority', { ascending: true });
+      if (rolesError) {
+        throw new Error('Failed to fetch roles configuration.');
+      }
 
       let adminPass = 'HighCoreadmin_@@';
       let modPass = 'HighCoremod_@@';
@@ -145,15 +130,6 @@ export default function Login() {
         if (parsed?.security?.staffPassword) staffPass = parsed.security.staffPassword;
       }
 
-      let dashboardRoles = [];
-      let rolePermissions: Record<string, string[]> = {};
-
-      if (rolesRow?.value) {
-        const parsed = JSON.parse(rolesRow.value);
-        dashboardRoles = parsed.roles || [];
-        rolePermissions = parsed.permissions || {};
-      }
-
       const userDiscordRoleIds = data.guild.roles.map((r: any) => r.id);
 
       const hasBaseStaffRole = userDiscordRoleIds.includes('1487195816220430406');
@@ -161,14 +137,19 @@ export default function Login() {
         throw new Error('Access Denied: You are not a staff member.');
       }
 
-      const matchingRoles = dashboardRoles.filter((r: any) => r.enabled && userDiscordRoleIds.includes(r.id));
+      const dashboardRoles = rolesData || [];
+      const matchingRoles = dashboardRoles.filter((r: any) => {
+        const dRoles = Array.isArray(r.discord_roles) ? r.discord_roles : [];
+        return dRoles.some((dr: string) => userDiscordRoleIds.includes(dr));
+      });
+
       if (matchingRoles.length === 0) {
-        throw new Error('Access Denied: You do not have any authorized administrative roles.');
+        throw new Error('Access Denied: You do not have any authorized administrative roles linked to your Discord roles.');
       }
 
       matchingRoles.sort((a: any, b: any) => a.priority - b.priority);
       const highestRole = matchingRoles[0];
-      const permissions = rolePermissions[highestRole.id] || [];
+      const permissions = Array.isArray(highestRole.permissions) ? highestRole.permissions : [];
 
       let authVal = staffPass;
       let roleName = 'Staff';
@@ -269,11 +250,12 @@ export default function Login() {
     }
   };
 
-  const handleRoleLogin = (e: React.FormEvent) => {
+  const handleRoleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     let isCorrect = false;
     let authVal = '';
     let username = '';
+    let roleNameForLookup = '';
 
     const adminPass = settings?.security?.adminPassword || 'HighCoreadmin_@@';
     const modPass = settings?.security?.modPassword || 'HighCoremod_@@';
@@ -283,31 +265,32 @@ export default function Login() {
       isCorrect = password === adminPass;
       authVal = adminPass;
       username = 'Guest';
+      roleNameForLookup = 'Administrator';
     } else if (selectedRole === 'moderator') {
       isCorrect = password === modPass;
       authVal = modPass;
       username = 'Guest';
+      roleNameForLookup = 'Moderator';
     } else if (selectedRole === 'staff') {
       isCorrect = password === staffPass;
       authVal = staffPass;
       username = 'Guest';
+      roleNameForLookup = 'Staff';
     }
 
     if (isCorrect) {
       let perms: string[] = [];
-      if (selectedRole === 'administrator') {
-        perms = ['*'];
-      } else if (selectedRole === 'moderator') {
-        perms = [
-          'view_dashboard', 'view_employees', 'view_forums', 'view_tickets',
-          'add_points', 'remove_points', 'review_reports', 'add_whitelist',
-          'edit_whitelist', 'submit_report'
-        ];
-      } else if (selectedRole === 'staff') {
-        perms = [
-          'view_dashboard', 'claim_event', 'complete_task', 'submit_report'
-        ];
+      try {
+        const { data: roleData } = await supabase.from('roles').select('permissions').eq('name', roleNameForLookup).maybeSingle();
+        if (roleData && roleData.permissions) {
+          perms = Array.isArray(roleData.permissions) ? roleData.permissions : [];
+        } else {
+           perms = roleNameForLookup === 'Administrator' ? ['*'] : [];
+        }
+      } catch (err) {
+        console.error("Failed to fetch role perms", err);
       }
+      
       localStorage.setItem('adminAuth', authVal);
       localStorage.setItem('adminUsername', username);
       localStorage.setItem('isAdmin', selectedRole === 'administrator' ? 'true' : 'false');
@@ -324,10 +307,15 @@ export default function Login() {
     }
   };
 
+  const renderIcon = (iconName: string, fallback: any, color: string) => {
+    const IconComp = iconName && (LucideIcons as any)[iconName] ? (LucideIcons as any)[iconName] : null;
+    return IconComp ? <IconComp size={20} style={{ color }} /> : fallback;
+  };
+
   const roles = [
-    { id: 'administrator', name: settings?.login?.textAdmin || 'Staff Manager', icon: <ShieldAlert size={20} style={{ color: settings?.login?.colorAdmin || '#ffd93d' }} /> },
-    { id: 'moderator', name: settings?.login?.textMod || 'Moderator', icon: <Shield size={20} style={{ color: settings?.login?.colorMod || '#51cf66' }} /> },
-    { id: 'staff', name: settings?.login?.textStaff || 'Staff', icon: <ShieldCheck size={20} style={{ color: settings?.login?.colorStaff || '#4dabf7' }} /> },
+    { id: 'administrator', name: settings?.login?.textAdmin || 'Staff Manager', icon: renderIcon(settings?.login?.iconAdmin, <ShieldAlert size={20} style={{ color: settings?.login?.colorAdmin || '#ffd93d' }} />, settings?.login?.colorAdmin || '#ffd93d') },
+    { id: 'moderator', name: settings?.login?.textMod || 'Moderator', icon: renderIcon(settings?.login?.iconMod, <Shield size={20} style={{ color: settings?.login?.colorMod || '#51cf66' }} />, settings?.login?.colorMod || '#51cf66') },
+    { id: 'staff', name: settings?.login?.textStaff || 'Staff', icon: renderIcon(settings?.login?.iconStaff, <ShieldCheck size={20} style={{ color: settings?.login?.colorStaff || '#4dabf7' }} />, settings?.login?.colorStaff || '#4dabf7') },
   ];
 
   if (isLoggingInDiscord) {

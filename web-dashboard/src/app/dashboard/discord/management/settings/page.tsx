@@ -463,40 +463,19 @@ export default function SettingsPage() {
         setAppSettings(mergedSettings);
       }
 
-      const rolesRow = settingsData?.find(s => s.key === 'admin_roles_permissions');
-      if (rolesRow?.value) {
-        const parsed = typeof rolesRow.value === 'string' ? JSON.parse(rolesRow.value) : rolesRow.value;
-        const loadedRoles = parsed.roles || DEFAULT_ADMIN_ROLES;
-        setAdminRoles(loadedRoles);
-        setRolePermissions(parsed.permissions || {});
-        if (loadedRoles.length > 0) {
-          setSelectedRoleId(loadedRoles[0].id);
-        }
-      } else {
-        setAdminRoles(DEFAULT_ADMIN_ROLES);
-        const initialPerms: Record<string, string[]> = {};
-        DEFAULT_ADMIN_ROLES.forEach(r => {
-          if (r.priority <= 7) {
-            initialPerms[r.id] = PERMISSIONS_GROUPS.flatMap(g => g.permissions.map(p => p.key));
-          } else if (r.name.toLowerCase().includes('moderator') || r.name.toLowerCase().includes('leader')) {
-            initialPerms[r.id] = [
-              'view_dashboard', 'view_employees', 'view_ranks', 'view_forums', 'view_tickets',
-              'add_employee', 'edit_employee', 'add_points', 'remove_points', 'manage_job_titles', 'review_reports',
-              'add_whitelist', 'edit_whitelist', 'add_team', 'edit_team', 'manage_tags',
-              'add_ticket', 'edit_ticket', 'close_ticket', 'submit_report', 'review_dc_reports', 'review_mc_reports',
-              'view_mc_status', 'view_mc_staff', 'manage_mc_reports', 'view_dc_status', 'view_dc_staff', 'manage_dc_reports'
-            ];
-          } else {
-            initialPerms[r.id] = [
-              'view_dashboard', 'view_employees', 'view_ranks', 'view_forums',
-              'complete_task', 'claim_event', 'submit_report', 'view_mc_status', 'view_mc_staff', 'view_dc_status', 'view_dc_staff'
-            ];
-          }
+      const { data: rolesData, error: rolesErr } = await supabase.from('roles').select('*').order('priority', { ascending: true });
+      if (rolesData && rolesData.length > 0) {
+        const sorted = rolesData.sort((a: any, b: any) => a.priority - b.priority);
+        setAdminRoles(sorted);
+        const perms: Record<string, string[]> = {};
+        sorted.forEach((r: any) => {
+          perms[r.id] = Array.isArray(r.permissions) ? r.permissions : [];
         });
-        setRolePermissions(initialPerms);
-        if (DEFAULT_ADMIN_ROLES.length > 0) {
-          setSelectedRoleId(DEFAULT_ADMIN_ROLES[0].id);
-        }
+        setRolePermissions(perms);
+        setSelectedRoleId(sorted[0].id);
+      } else {
+        setAdminRoles([]);
+        setRolePermissions({});
       }
     } catch (err) {
       console.error(err);
@@ -634,11 +613,11 @@ export default function SettingsPage() {
       return;
     }
     const newRole = {
-      id,
+      id: crypto.randomUUID(),
       name,
-      color,
+      discord_roles: [id],
       priority: adminRoles.length + 1,
-      enabled: true
+      is_fixed: false
     };
     setAdminRoles(prev => [...prev, newRole]);
     const basicPerms = [
@@ -657,11 +636,17 @@ export default function SettingsPage() {
   };
 
   const handleDeleteRole = (id: string) => {
+    const roleToDelete = adminRoles.find(r => r.id === id);
+    if (roleToDelete?.is_fixed) {
+      showAlert('Error', 'Fixed roles cannot be deleted.', 'danger');
+      return;
+    }
     showConfirm(
       'Delete Role',
       'Are you sure you want to delete this role? This will remove all its permission mappings.',
       'danger',
-      () => {
+      async () => {
+        await supabase.from('roles').delete().eq('id', id);
         setAdminRoles(prev => {
           const filtered = prev.filter(r => r.id !== id);
           return filtered.map((r, i) => ({ ...r, priority: i + 1 }));
@@ -695,14 +680,15 @@ export default function SettingsPage() {
 
       if (appErr) throw appErr;
 
-      const { error: rolesErr } = await supabase.from('settings').update({
-        value: JSON.stringify({
-          roles: adminRoles,
-          permissions: rolePermissions,
-          updatedAt: new Date().toISOString()
-        })
-      }).eq('key', 'admin_roles_permissions');
-
+      const rolesToUpsert = adminRoles.map((r, index) => ({
+        id: r.id,
+        name: r.name,
+        discord_roles: Array.isArray(r.discord_roles) ? r.discord_roles : [],
+        priority: index + 1,
+        permissions: rolePermissions[r.id] || [],
+        is_fixed: r.is_fixed || false
+      }));
+      const { error: rolesErr } = await supabase.from('roles').upsert(rolesToUpsert);
       if (rolesErr) throw rolesErr;
 
       await supabase.from('activity_log').insert({
@@ -1296,22 +1282,29 @@ export default function SettingsPage() {
                                     value={role.name}
                                     onClick={e => e.stopPropagation()}
                                     onChange={e => updateRoleField(idx, 'name', e.target.value)}
+                                    disabled={role.is_fixed}
                                     style={{
                                       background: 'transparent',
                                       border: 'none',
-                                      color: 'var(--foreground)',
+                                      color: role.is_fixed ? 'var(--primary)' : 'var(--foreground)',
                                       fontWeight: 700,
                                       fontSize: '0.9rem',
                                       padding: 0,
                                       outline: 'none',
-                                      width: '100%'
+                                      width: '100%',
+                                      opacity: role.is_fixed ? 0.8 : 1
                                     }}
                                   />
                                   <input
                                     type="text"
-                                    value={role.id}
+                                    value={(role.discord_roles && role.discord_roles[0]) || ''}
                                     onClick={e => e.stopPropagation()}
-                                    onChange={e => handleRoleIdChange(idx, role.id, e.target.value)}
+                                    onChange={e => {
+                                      const updatedRoles = [...adminRoles];
+                                      updatedRoles[idx].discord_roles = [e.target.value];
+                                      setAdminRoles(updatedRoles);
+                                    }}
+                                    placeholder={role.is_fixed ? "Link Discord Role ID (Optional)" : "Discord Role ID"}
                                     style={{
                                       background: 'transparent',
                                       border: 'none',
@@ -1371,28 +1364,32 @@ export default function SettingsPage() {
                                   />
                                 </div>
 
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteRole(role.id);
-                                  }}
-                                  style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    color: '#EF4444',
-                                    cursor: 'pointer',
-                                    padding: '0.4rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    opacity: 0.7,
-                                    transition: 'opacity 0.2s'
-                                  }}
-                                  onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                                  onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
-                                >
-                                  <Trash2 size={16} />
-                                </button>
+                                {!role.is_fixed ? (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteRole(role.id);
+                                    }}
+                                    style={{
+                                      background: 'transparent',
+                                      border: 'none',
+                                      color: '#EF4444',
+                                      cursor: 'pointer',
+                                      padding: '0.4rem',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      opacity: 0.7,
+                                      transition: 'opacity 0.2s'
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                ) : (
+                                  <div style={{ width: '32px' }} />
+                                )}
                               </div>
                             );
                           })}

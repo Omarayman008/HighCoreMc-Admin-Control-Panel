@@ -113,7 +113,8 @@ export default function DiscordStatus() {
                 key={i}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+                whileHover={{ scale: 1.05, y: -5, boxShadow: '0 20px 40px rgba(0,0,0,0.25)', borderColor: stat.color }}
+                transition={{ delay: i * 0.05, duration: 0.2 }}
                 style={{
                   background: 'var(--glass-bg)',
                   border: '1px solid var(--glass-border)',
@@ -152,7 +153,7 @@ export default function DiscordStatus() {
             </h2>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+              <motion.div whileHover={{ scale: 1.02, y: -3, borderColor: '#5865F2' }} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--glass-border)', transition: 'all 0.2s' }}>
                 <div style={{ padding: '0.6rem', background: 'rgba(88, 101, 242, 0.1)', borderRadius: '10px' }}>
                   <Users size={20} color="#5865F2" />
                 </div>
@@ -160,9 +161,9 @@ export default function DiscordStatus() {
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Server Name</div>
                   <div style={{ fontWeight: 700, color: 'var(--foreground)', fontSize: '1rem', marginTop: '0.2rem' }}>HighCore Mc</div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+              <motion.div whileHover={{ scale: 1.02, y: -3, borderColor: '#ec4899' }} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--glass-border)', transition: 'all 0.2s' }}>
                 <div style={{ padding: '0.6rem', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '10px' }}>
                   <ShieldAlert size={20} color="#ec4899" />
                 </div>
@@ -170,9 +171,9 @@ export default function DiscordStatus() {
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Boost Level</div>
                   <div style={{ fontWeight: 700, color: 'var(--foreground)', fontSize: '1rem', marginTop: '0.2rem' }}>Level {status?.boostLevel || 0} ({status?.boostCount || 0} Boosts)</div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+              <motion.div whileHover={{ scale: 1.02, y: -3, borderColor: '#3b82f6' }} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--glass-border)', transition: 'all 0.2s' }}>
                 <div style={{ padding: '0.6rem', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '10px' }}>
                   <Hash size={20} color="#3b82f6" />
                 </div>
@@ -180,9 +181,9 @@ export default function DiscordStatus() {
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Channels</div>
                   <div style={{ fontWeight: 700, color: 'var(--foreground)', fontSize: '1rem', marginTop: '0.2rem' }}>{status?.totalChannels || 0}</div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+              <motion.div whileHover={{ scale: 1.02, y: -3, borderColor: '#a855f7' }} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--glass-border)', transition: 'all 0.2s' }}>
                 <div style={{ padding: '0.6rem', background: 'rgba(168, 85, 247, 0.1)', borderRadius: '10px' }}>
                   <Layers size={20} color="#a855f7" />
                 </div>
@@ -190,7 +191,7 @@ export default function DiscordStatus() {
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Roles</div>
                   <div style={{ fontWeight: 700, color: 'var(--foreground)', fontSize: '1rem', marginTop: '0.2rem' }}>{status?.totalRoles || 0}</div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
 
