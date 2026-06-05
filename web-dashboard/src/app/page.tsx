@@ -79,7 +79,7 @@ export default function Login() {
   // Discord OAuth Logic
   const handleDiscordLogin = () => {
     const DISCORD_CLIENT_ID = '1508870031562244176';
-    const REDIRECT_URI = typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3000/' : 'https://admin.highcores.com/';
+    const REDIRECT_URI = 'https://admin.highcores.com/';
 
     localStorage.setItem('redirect_to', redirectTo);
 
