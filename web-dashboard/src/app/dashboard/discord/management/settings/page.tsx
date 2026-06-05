@@ -275,10 +275,7 @@ const PERMISSIONS_GROUPS = [
   {
     category: 'Tickets',
     permissions: [
-      { key: 'add_ticket', label: 'add_ticket', desc: 'Add Ticket' },
-      { key: 'edit_ticket', label: 'edit_ticket', desc: 'Edit Tickets' },
-      { key: 'close_ticket', label: 'close_ticket', desc: 'Close Tickets' },
-      { key: 'delete_ticket', label: 'delete_ticket', desc: 'Delete Tickets' }
+      { key: 'review_tickets', label: 'review_tickets', desc: 'Review Tickets' }
     ]
   },
   {
@@ -1244,8 +1241,10 @@ export default function SettingsPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '0.75rem',
+                          maxHeight: '450px',
+                          overflowY: 'auto',
                           paddingRight: '0.5rem',
-                          paddingBottom: '6rem' // Added padding to ensure space at the bottom
+                          paddingBottom: '250px' // Provides scroll room for the absolute ColorPicker
                         }}>
                           {adminRoles
                             .map((role, idx) => ({ role, idx }))
