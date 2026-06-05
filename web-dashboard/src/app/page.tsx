@@ -98,7 +98,7 @@ export default function Login() {
     try {
       window.history.replaceState({}, document.title, window.location.pathname);
 
-      const response = await fetch('/discord/callback', {
+      const response = await fetch('https://admin.highcores.com/discord/callback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
@@ -322,21 +322,18 @@ export default function Login() {
     return (
       <div style={{ display: 'flex', height: '100vh', width: '100%', alignItems: 'center', justifyContent: 'center', background: '#0a0e1a', color: '#fff' }}>
         <div style={{ textAlign: 'center' }}>
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            border: '4px solid rgba(255,255,255,0.1)',
-            borderTopColor: '#5865F2',
-            borderRadius: '50%',
-            margin: '0 auto 1rem',
-            animation: 'spin 1s linear infinite'
-          }} />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+            style={{
+              width: '40px',
+              height: '40px',
+              border: '4px solid rgba(255,255,255,0.1)',
+              borderTopColor: '#5865F2',
+              borderRadius: '50%',
+              margin: '0 auto 1rem'
+            }}
+          />
           <p style={{ fontFamily: 'Tajawal, sans-serif' }}>Logging in with Discord...</p>
         </div>
       </div>
