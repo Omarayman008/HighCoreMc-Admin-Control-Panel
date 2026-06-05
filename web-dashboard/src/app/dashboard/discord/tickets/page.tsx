@@ -120,16 +120,16 @@ export default function TicketsPage() {
       const newEmpId = reviewForm.emp_id ? parseInt(reviewForm.emp_id) : null;
       const newPts = reviewForm.pts || 0;
 
-      if (oldEmpId && oldPts > 0) {
+      if (oldEmpId && oldPts !== 0) {
         const { data: oldEmp } = await supabase.from('employees').select('points, dc_points').eq('id', oldEmpId).maybeSingle();
         if (oldEmp) {
-          const updPts = Math.max(0, (oldEmp.points || 0) - oldPts);
-          const updDc = Math.max(0, (oldEmp.dc_points || 0) - oldPts);
+          const updPts = (oldEmp.points || 0) - oldPts;
+          const updDc = (oldEmp.dc_points || 0) - oldPts;
           await supabase.from('employees').update({ points: updPts, dc_points: updDc }).eq('id', oldEmpId);
         }
       }
 
-      if (newEmpId && newPts > 0) {
+      if (newEmpId && newPts !== 0) {
         const { data: newEmp } = await supabase.from('employees').select('points, dc_points').eq('id', newEmpId).maybeSingle();
         if (newEmp) {
           const updPts = (newEmp.points || 0) + newPts;
@@ -215,7 +215,7 @@ export default function TicketsPage() {
             <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input
               type="text"
-              placeholder="Search by Ticket ID or Title..."
+              placeholder="Search by Ticket ID or Type..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               style={{ width: '100%', padding: '0.8rem 1rem 0.8rem 2.5rem', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)', color: 'var(--foreground)', outline: 'none' }}
@@ -260,7 +260,7 @@ export default function TicketsPage() {
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)' }}>
                   <th style={{ padding: '1rem' }}>Ticket ID</th>
-                  <th style={{ padding: '1rem' }}>Title</th>
+                  <th style={{ padding: '1rem' }}>Type</th>
                   <th style={{ padding: '1rem' }}>Handled By</th>
                   <th style={{ padding: '1rem' }}>Status</th>
                   <th style={{ padding: '1rem' }}>Points Awarded</th>
@@ -284,7 +284,20 @@ export default function TicketsPage() {
                         #{t.ticket_id}
                       </a>
                     </td>
-                    <td style={{ padding: '1rem', color: 'var(--foreground)' }}>{t.title || 'Support Request'}</td>
+                    <td style={{ padding: '1rem' }}>
+                      <span style={{
+                        padding: '0.4rem 0.8rem',
+                        borderRadius: '12px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        color: '#818CF8',
+                        textTransform: 'uppercase',
+                        border: '1px solid rgba(99, 102, 241, 0.2)'
+                      }}>
+                        {t.title || 'Support Request'}
+                      </span>
+                    </td>
                     <td style={{ padding: '1rem', color: 'var(--foreground)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <User size={14} color="var(--text-muted)" />
@@ -312,8 +325,8 @@ export default function TicketsPage() {
                           : (settings?.tickets?.textClosed || 'CLOSED')}
                       </span>
                     </td>
-                    <td style={{ padding: '1rem', fontWeight: 700, color: t.pts > 0 ? '#10B981' : 'var(--text-muted)' }}>
-                      {t.pts > 0 ? `+${t.pts} PTS` : '0 PTS'}
+                    <td style={{ padding: '1rem', fontWeight: 700, color: t.pts > 0 ? '#10B981' : (t.pts < 0 ? '#EF4444' : 'var(--text-muted)') }}>
+                      {t.pts > 0 ? `+${t.pts} PTS` : (t.pts < 0 ? `${t.pts} PTS` : '0 PTS')}
                     </td>
                     <td style={{ padding: '1rem', color: 'var(--text-muted)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
