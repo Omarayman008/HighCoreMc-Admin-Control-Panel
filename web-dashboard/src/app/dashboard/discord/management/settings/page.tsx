@@ -1244,9 +1244,8 @@ export default function SettingsPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '0.75rem',
-                          maxHeight: '450px',
-                          overflowY: 'auto',
-                          paddingRight: '0.5rem'
+                          paddingRight: '0.5rem',
+                          paddingBottom: '6rem' // Added padding to ensure space at the bottom
                         }}>
                           {adminRoles
                             .map((role, idx) => ({ role, idx }))
