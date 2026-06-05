@@ -77,7 +77,7 @@ export default function Login() {
   }
 
   // Discord OAuth Logic
-  const handleDiscordLogin = () => {
+  function handleDiscordLogin() {
     const DISCORD_CLIENT_ID = '1508870031562244176';
     const REDIRECT_URI = 'https://admin.highcores.com/';
 
@@ -91,9 +91,9 @@ export default function Login() {
     });
 
     window.location.href = `https://discord.com/oauth2/authorize?${params.toString()}`;
-  };
+  }
 
-  const handleDiscordCallback = async (code: string) => {
+  async function handleDiscordCallback(code: string) {
     setIsLoggingInDiscord(true);
     try {
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -250,7 +250,7 @@ export default function Login() {
     }
   };
 
-  const handleRoleLogin = async (e: React.FormEvent) => {
+  async function handleRoleLogin(e: React.FormEvent) {
     e.preventDefault();
     let isCorrect = false;
     let authVal = '';
@@ -307,7 +307,7 @@ export default function Login() {
     }
   };
 
-  const renderIcon = (iconName: string, fallback: any, color: string) => {
+  function renderIcon(iconName: string, fallback: any, color: string) {
     const IconComp = iconName && (LucideIcons as any)[iconName] ? (LucideIcons as any)[iconName] : null;
     return IconComp ? <IconComp size={20} style={{ color }} /> : fallback;
   };
