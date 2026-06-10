@@ -593,7 +593,11 @@ export default function EventsTab() {
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Description</label>
-                  <textarea required value={desc} onChange={e => setDesc(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)', minHeight: '60px' }} />
+                  <textarea required value={desc} onChange={e => {
+                    setDesc(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                  }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)', minHeight: '100px', resize: 'none', overflow: 'hidden' }} />
                 </div>
                 <div style={{ display: 'flex', gap: '0.8rem' }}>
                   <div style={{ flex: 1 }}>
