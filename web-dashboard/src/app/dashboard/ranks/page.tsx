@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { Award, Plus, Edit2, Trash2, X, AlertCircle, Shield, CheckCircle2, GripVertical, Image as ImageIcon, Users } from 'lucide-react';
+import { Trophy, Shield, Users, Edit2, Trash2, Plus, GripVertical, CheckCircle2, ChevronDown, Award, X, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { hasPermission } from '@/lib/permissions';
 
 interface Rank {
   id: number;
