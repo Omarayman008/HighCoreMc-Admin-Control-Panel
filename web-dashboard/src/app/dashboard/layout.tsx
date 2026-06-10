@@ -64,6 +64,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [showSettingsOverlay, setShowSettingsOverlay] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState<{isOpen: boolean, type: 'danger'|'success'|'info', title: string, message: string, onConfirm: () => void}>({
     isOpen: false, type: 'info', title: '', message: '', onConfirm: () => {}
   });
@@ -443,8 +444,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Background */}
       <div className="bg-gradient" />
 
+      <div 
+        className={`sidebar-overlay ${isMobileSidebarOpen ? 'open' : ''}`} 
+        onClick={() => setIsMobileSidebarOpen(false)}
+      />
+
       {/* Sidebar */}
-      <aside style={{
+      <aside className={`dashboard-sidebar ${isMobileSidebarOpen ? 'open' : ''}`} style={{
         width: '260px',
         background: 'var(--glass-bg)',
         backdropFilter: 'blur(24px)',
@@ -684,7 +690,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Right Container: Header + Main Content */}
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100vh', overflow: 'hidden' }}>
+      <div className="page-container" style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100vh', overflow: 'hidden' }}>
+
+        {/* Mobile Header */}
+        <div className="mobile-only" style={{
+          position: 'fixed', top: 0, left: 0, right: 0, height: '70px',
+          background: 'var(--glass-bg)', backdropFilter: 'blur(24px)', borderBottom: '1px solid var(--glass-border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1rem', zIndex: 900
+        }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--foreground)', margin: 0 }}>
+            HighCore<span style={{ color: 'var(--primary)' }}>Mc</span>
+          </h2>
+          <button 
+            onClick={() => setIsMobileSidebarOpen(true)}
+            style={{ background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer' }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+        </div>
 
         <ConfirmModal 
           isOpen={confirmConfig.isOpen}
@@ -705,15 +728,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         )}
 
-        {/* Top Header */}
-        <header style={{
+        {/* Desktop Header */}
+        <header className="desktop-header" style={{
           height: '80px',
           background: 'var(--glass-bg)',
           backdropFilter: 'blur(24px)',
           borderBottom: '1px solid var(--glass-border)',
-          padding: '0 2rem',
           display: 'flex',
           alignItems: 'center',
+          padding: '0 3rem',
           justifyContent: 'space-between',
           boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
           zIndex: 50,
@@ -745,7 +768,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* Main Content */}
-        <main style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto', zIndex: 1, direction: 'ltr' }}>
+        <main 
+          className="main-content"
+          style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto', zIndex: 1, direction: 'ltr' }}
+          onClick={() => { if(isMobileSidebarOpen) setIsMobileSidebarOpen(false); }}
+        >
           {children}
         </main>
       </div>
@@ -787,7 +814,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <XIcon size={20} />
                 </button>
               </div>
-              <div style={{ flex: 1, overflowY: 'auto', position: 'relative', background: '#0f0f13' }}>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '2rem' }} onClick={() => { if(isMobileSidebarOpen) setIsMobileSidebarOpen(false); }}>
                 {/* Render the full settings page */}
                 <SettingsPage />
               </div>

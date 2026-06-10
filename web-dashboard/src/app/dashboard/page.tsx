@@ -409,7 +409,7 @@ export default function Dashboard() {
         </div>
 
         {/* Row 2: Quick Stats & Announcements */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem' }}>
+        <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem' }}>
           {/* Quick Stats */}
           <motion.div
             variants={itemVariants}

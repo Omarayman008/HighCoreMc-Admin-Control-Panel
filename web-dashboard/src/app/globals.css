@@ -383,3 +383,84 @@ body {
     border-color: rgba(252, 211, 77, 0.8);
   }
 }
+
+/* Mobile Responsiveness */
+.mobile-only {
+  display: none !important;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px !important;
+    z-index: 1000 !important;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .dashboard-sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .sidebar-overlay.open {
+    display: block;
+    opacity: 1;
+  }
+  .mobile-only {
+    display: flex !important;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+  .page-container {
+    flex: 1;
+    width: 100%;
+    padding-top: 70px !important; /* Make room for mobile header */
+  }
+  
+  .main-content {
+    padding: 1rem !important;
+  }
+  
+  .desktop-header {
+    display: none !important;
+  }
+
+  .responsive-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .responsive-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Make table wrappers scrollable horizontally */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix header actions flex direction on small screens */
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  /* Fix modals for mobile */
+  .modal-content {
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    padding: 1.5rem !important;
+    overflow-y: auto !important;
+  }
+}
