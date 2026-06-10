@@ -1518,7 +1518,7 @@ export default function SettingsPage() {
                                   }} style={{ background: selectedRole.department_type === 'MC' ? 'rgba(239,68,68,0.15)' : 'transparent', color: selectedRole.department_type === 'MC' ? '#EF4444' : 'var(--text-muted)', padding: '0.4rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>MC Department</button>
                                 </div>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', overflowY: 'auto', maxHeight: '350px', paddingRight: '0.5rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', overflowY: 'auto', maxHeight: '600px', paddingRight: '0.5rem', paddingBottom: '50px' }}>
                                   {PERMISSIONS_GROUPS.map((group, groupIdx) => {
                                     const groupKeys = group.permissions.map(p => p.key);
                                     const enabledCount = groupKeys.filter(k => roleKeys.includes(k)).length;
