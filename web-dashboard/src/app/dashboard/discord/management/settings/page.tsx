@@ -1229,7 +1229,7 @@ export default function SettingsPage() {
                   {(systemTab === 'roles' || systemTab === 'fixed_roles') && (
                     <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '2rem', minHeight: '500px', flexWrap: 'wrap' }}>
 
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', height: '100%' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', height: '650px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <h4 style={{ color: 'var(--foreground)', fontWeight: 700, fontSize: '1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                             <Users size={18} color="var(--primary)" /> {systemTab === 'fixed_roles' ? 'Fixed Roles' : 'Roles'} ({adminRoles.filter(r => systemTab === 'fixed_roles' ? r.is_fixed : !r.is_fixed).length})
@@ -1454,7 +1454,7 @@ export default function SettingsPage() {
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '1.2rem',
-                        height: '100%'
+                        height: '650px'
                       }}>
                         {selectedRoleId ? (
                           (() => {
