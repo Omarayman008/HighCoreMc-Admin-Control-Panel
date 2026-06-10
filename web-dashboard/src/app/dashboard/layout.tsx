@@ -77,6 +77,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           setShowSettingsOverlay(prev => !prev);
         }
       }
+      if (e.key === 'Escape') {
+        setShowSettingsOverlay(false);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -684,44 +687,46 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Settings Overlay (Alt + X) */}
       <AnimatePresence>
         {showSettingsOverlay && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: 'fixed',
-              top: '2%',
-              left: '2%',
-              width: '96%',
-              height: '96%',
-              background: 'var(--bg)',
-              zIndex: 99999,
-              borderRadius: '24px',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-              border: '1px solid var(--glass-border)',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden'
-            }}
+          <div 
+            style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}
+            onClick={() => setShowSettingsOverlay(false)}
           >
-            <div style={{ padding: '1rem 2rem', background: 'var(--glass-bg)', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--foreground)' }}>
-                <Settings size={24} color="#EC4899" />
-                Quick Settings Overlay
-              </h2>
-              <button
-                onClick={() => setShowSettingsOverlay(false)}
-                style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', padding: '0.5rem', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <XIcon size={20} />
-              </button>
-            </div>
-            <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }}>
-              {/* Render the full settings page */}
-              <SettingsPage />
-            </div>
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 50, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: '100%',
+                height: '100%',
+                background: '#0f0f13',
+                borderRadius: '24px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden'
+              }}
+            >
+              <div style={{ padding: '1rem 2rem', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.8rem', color: '#fff' }}>
+                  <Settings size={24} color="#EC4899" />
+                  Quick Settings Overlay
+                </h2>
+                <button
+                  onClick={() => setShowSettingsOverlay(false)}
+                  style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', padding: '0.5rem', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <XIcon size={20} />
+                </button>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', position: 'relative', background: '#0f0f13' }}>
+                {/* Render the full settings page */}
+                <SettingsPage />
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
