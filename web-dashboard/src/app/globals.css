@@ -444,6 +444,11 @@ body {
     grid-template-columns: 1fr !important;
   }
   
+  .responsive-flex {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
   /* Make table wrappers scrollable horizontally */
   .table-responsive {
     overflow-x: auto;
@@ -464,3 +469,7 @@ body {
     overflow-y: auto !important;
   }
 }
+t h  
+ t d  
+   w h i t e - s p a c e :   n o w r a p ;    
+ 

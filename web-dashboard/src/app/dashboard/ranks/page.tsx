@@ -204,7 +204,7 @@ export default function RanksPage() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', overflowY: 'auto', height: '100%' }}>
+    <div className="main-content" style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', overflowY: 'auto', height: '100%' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
@@ -228,7 +228,7 @@ export default function RanksPage() {
                 key={rank.id} 
                 value={rank}
                 layoutId={`rank-${rank.id}`}
-                style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', cursor: 'grab' }}
+                style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', cursor: 'grab', flexWrap: 'wrap' }}
                 whileDrag={{ scale: 1.02, zIndex: 50, boxShadow: '0 10px 30px rgba(0,0,0,0.3)', backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(99,102,241,0.4)' }}
               >
                 <div style={{ color: 'var(--text-muted)', cursor: 'grab' }} title="Drag to reorder"><GripVertical size={24} /></div>
@@ -280,7 +280,7 @@ export default function RanksPage() {
               </h2>
               
               <form onSubmit={handleSaveRank} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="responsive-flex" style={{ display: 'flex', gap: '1rem' }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', color: 'var(--foreground)', marginBottom: '0.5rem', fontWeight: 600 }}>Rank Name</label>
                     <input type="text" required value={rankForm.name} onChange={e => setRankForm({...rankForm, name: e.target.value})} placeholder="e.g. Staff Manager" style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
@@ -297,7 +297,7 @@ export default function RanksPage() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="responsive-flex" style={{ display: 'flex', gap: '1rem' }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', color: 'var(--foreground)', marginBottom: '0.5rem', fontWeight: 600 }}>Minimum Points</label>
                     <input type="number" required value={rankForm.min_pts} onChange={e => setRankForm({...rankForm, min_pts: Number(e.target.value)})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
@@ -308,7 +308,7 @@ export default function RanksPage() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div className="responsive-flex" style={{ display: 'flex', gap: '1rem' }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', color: 'var(--foreground)', marginBottom: '0.5rem', fontWeight: 600 }}>Badge Design</label>
                     <CustomSelect 

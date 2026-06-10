@@ -198,7 +198,7 @@ export default function TicketsPage() {
   }
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="main-content" style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div>
         <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
           <Ticket size={32} color={settings?.tickets?.colorHeader || '#5865F2'} />
@@ -393,7 +393,8 @@ export default function TicketsPage() {
               border: '1px solid var(--glass-border)',
               borderRadius: '16px',
               padding: '2rem',
-              width: '450px',
+              width: '100%',
+              maxWidth: '450px',
               boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
               display: 'flex',
               flexDirection: 'column',
@@ -404,7 +405,7 @@ export default function TicketsPage() {
               <Star size={22} color="var(--primary)" /> Review & Assess Ticket
             </h3>
             
-            <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="responsive-flex" style={{ display: 'flex', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Ticket ID</label>
                 <input
@@ -446,7 +447,7 @@ export default function TicketsPage() {
               />
             </div>
 
-            <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="responsive-flex" style={{ display: 'flex', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Points Awarded</label>
                 <input

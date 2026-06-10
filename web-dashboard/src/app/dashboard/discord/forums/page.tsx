@@ -433,7 +433,7 @@ export default function ForumsPage() {
   });
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div className="main-content" style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
       {/* Tabs */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -881,7 +881,7 @@ export default function ForumsPage() {
                     />
                   </div>
 
-                  <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div className="responsive-flex" style={{ display: 'flex', gap: '1rem' }}>
                     <div style={{ flex: 1 }}>
                       <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Version</label>
                       <CustomSelect
@@ -966,7 +966,7 @@ export default function ForumsPage() {
                     />
                   </div>
 
-                  <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div className="responsive-flex" style={{ display: 'flex', gap: '1rem' }}>
                     <div style={{ flex: 3 }}>
                       <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Team Name</label>
                       <input
@@ -1001,7 +1001,7 @@ export default function ForumsPage() {
                     </span>
                   </div>
 
-                  <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="responsive-flex" style={{ display: 'flex', gap: '1rem' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Member 2</label>
                       <input
