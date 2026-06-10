@@ -495,13 +495,13 @@ export default function Dashboard() {
           {/* Leaderboard */}
           <motion.div
             variants={itemVariants}
-            style={{ flex: '1 1 300px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.3)' }}
+            style={{ flex: '1 1 300px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.3)', height: '420px', display: 'flex', flexDirection: 'column' }}
           >
-            <h3 style={{ color: 'var(--foreground)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', fontWeight: 700 }}>
+            <h3 style={{ color: 'var(--foreground)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', fontWeight: 700, flexShrink: 0 }}>
               <Trophy size={20} color="#facc15" /> Leaderboard
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-              {leaderboard.slice(0, 5).map((user, idx) => {
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }}>
+              {employees.map((user, idx) => {
                 const rank = idx + 1;
                 return (
                   <motion.div 
@@ -539,9 +539,9 @@ export default function Dashboard() {
           {/* Chart - Real Data from Leaderboard */}
           <motion.div
             variants={itemVariants}
-            style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.3)' }}
+            style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '1.5rem', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.3)', height: '420px' }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexShrink: 0 }}>
               <h3 style={{ color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>
                 <TrendingUp size={20} color="#60a5fa" /> Points Distribution
               </h3>
