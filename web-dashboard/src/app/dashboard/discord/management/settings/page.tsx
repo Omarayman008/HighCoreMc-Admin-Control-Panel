@@ -1265,10 +1265,10 @@ export default function SettingsPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '0.75rem',
-                          maxHeight: '450px',
+                          maxHeight: '600px',
                           overflowY: 'auto',
                           paddingRight: '0.5rem',
-                          paddingBottom: '250px' // Provides scroll room for the absolute ColorPicker
+                          paddingBottom: '50px' // Provides scroll room for the absolute ColorPicker
                         }}>
                           {adminRoles
                             .map((role, idx) => ({ role, idx }))
@@ -1499,23 +1499,6 @@ export default function SettingsPage() {
                                       Deselect All
                                     </button>
                                   </div>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.8rem' }}>
-                                  <button onClick={() => {
-                                      const idx = adminRoles.findIndex(r => r.id === selectedRole.id);
-                                      if (idx !== -1) updateRoleField(idx, 'department_type', 'ALL');
-                                  }} style={{ background: (!selectedRole.department_type || selectedRole.department_type === 'ALL') ? 'rgba(239,68,68,0.15)' : 'transparent', color: (!selectedRole.department_type || selectedRole.department_type === 'ALL') ? '#EF4444' : 'var(--text-muted)', padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>ALL (Both)</button>
-                                  
-                                  <button onClick={() => {
-                                      const idx = adminRoles.findIndex(r => r.id === selectedRole.id);
-                                      if (idx !== -1) updateRoleField(idx, 'department_type', 'DC');
-                                  }} style={{ background: selectedRole.department_type === 'DC' ? 'rgba(239,68,68,0.15)' : 'transparent', color: selectedRole.department_type === 'DC' ? '#EF4444' : 'var(--text-muted)', padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>DC Department</button>
-                                  
-                                  <button onClick={() => {
-                                      const idx = adminRoles.findIndex(r => r.id === selectedRole.id);
-                                      if (idx !== -1) updateRoleField(idx, 'department_type', 'MC');
-                                  }} style={{ background: selectedRole.department_type === 'MC' ? 'rgba(239,68,68,0.15)' : 'transparent', color: selectedRole.department_type === 'MC' ? '#EF4444' : 'var(--text-muted)', padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>MC Department</button>
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '0.8rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.8rem', flexWrap: 'wrap' }}>
