@@ -32,6 +32,7 @@ export default function EventsTab() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [assignedStaff, setAssignedStaff] = useState<string[]>(['']);
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
     setAssignedStaff(prev => {
@@ -93,13 +94,18 @@ export default function EventsTab() {
       return;
     }
 
+    const loggedAdmin = localStorage.getItem('adminUsername') || 'System';
+
     const eventPayload = {
       title: isPrivate && !title.startsWith('[Private]') ? `[Private] ${title}` : title,
       description: desc,
       type,
       event_date: eventDate,
       max_supervisors: maxSupervisors,
-      points: points
+      points: points,
+      section: 'mc',
+      created_by: loggedAdmin,
+      image_url: imageUrl || null
     };
 
     let error;
@@ -158,6 +164,7 @@ export default function EventsTab() {
     setIsPrivate(false);
     setAssignedStaff(['']);
     setEditingEvent(null);
+    setImageUrl('');
   };
 
   const openEditEvent = (ev: any) => {
@@ -167,6 +174,7 @@ export default function EventsTab() {
     setType(ev.type);
     setMaxSupervisors(ev.max_supervisors);
     setPoints(ev.points);
+    setImageUrl(ev.image_url || '');
     if (ev.event_date) {
       setEventDate(new Date(ev.event_date).toISOString());
     }
@@ -590,6 +598,10 @@ export default function EventsTab() {
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Event Title</label>
                   <input type="text" required value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="e.g. Building Contest" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Image URL (Optional)</label>
+                  <input type="text" value={imageUrl} onChange={e => setImageUrl(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="https://example.com/image.png" />
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Description</label>
