@@ -432,8 +432,14 @@ export default function EventsTab() {
                   <div style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600 }}>
                     {ev.type === 'text' ? <><MessageSquare size={14} /> Text</> : <><Mic size={14} /> Stage</>}
                   </div>
+
+                  {ev.status && (
+                    <div style={{ position: 'absolute', top: '1.5rem', left: '6.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: ev.status === 'CANCELLED' ? 'rgba(239, 68, 68, 0.2)' : ev.status === 'STARTED' ? 'rgba(250, 204, 21, 0.2)' : ev.status === 'FINISHED' ? 'rgba(156, 163, 175, 0.2)' : 'rgba(34, 197, 94, 0.2)', color: ev.status === 'CANCELLED' ? '#ef4444' : ev.status === 'STARTED' ? '#facc15' : ev.status === 'FINISHED' ? '#9ca3af' : '#22c55e', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
+                      {ev.status === 'OPEN' ? '🟢 OPEN' : ev.status === 'CLOSED' ? '🔴 CLOSED' : ev.status === 'STARTED' ? '🟡 STARTED' : ev.status === 'FINISHED' ? '🌑 FINISHED' : ev.status === 'CANCELLED' ? '❌ CANCELLED' : ev.status}
+                    </div>
+                  )}
                   
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '0.5rem', paddingLeft: '6.5rem', paddingRight: '6.5rem' }}>{ev.title}</h3>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '0.5rem', paddingLeft: ev.status ? '13rem' : '6.5rem', paddingRight: '6.5rem' }}>{ev.title}</h3>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.5 }}>{ev.description}</p>
                   
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
