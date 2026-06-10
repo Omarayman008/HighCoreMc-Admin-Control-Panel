@@ -563,26 +563,26 @@ export default function EventsTab() {
       {/* Add / Edit Event Modal */}
       <AnimatePresence>
         {showAddModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '3vh', paddingBottom: '3vh', overflowY: 'auto' }}>
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }} 
               exit={{ opacity: 0, scale: 0.95 }} 
-              style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '500px', padding: '2rem' }}
+              style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '450px', padding: '1.5rem', margin: 'auto' }}
             >
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '1.5rem' }}>{editingEvent ? 'Edit Discord Event' : 'Create Discord Event'}</h2>
-              <form onSubmit={handleCreateEvent} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '1rem' }}>{editingEvent ? 'Edit Discord Event' : 'Create Discord Event'}</h2>
+              <form onSubmit={handleCreateEvent} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Event Title</label>
-                  <input type="text" required value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="e.g. Community Q&A" />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Event Title</label>
+                  <input type="text" required value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="e.g. Community Q&A" />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Description</label>
-                  <textarea required value={desc} onChange={e => setDesc(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', minHeight: '80px' }} />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Description</label>
+                  <textarea required value={desc} onChange={e => setDesc(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)', minHeight: '60px' }} />
                 </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '0.8rem' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Event Type</label>
+                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Event Type</label>
                     <CustomSelect 
                       value={type} 
                       onChange={(val) => {
@@ -596,14 +596,14 @@ export default function EventsTab() {
                         }
                       }}
                       options={[
-                        { value: 'written', label: 'Written (15 pts - 1 supervisor)' },
-                        { value: 'stage', label: 'Stage (55 pts - 2 supervisors)' }
+                        { value: 'written', label: 'Written (15 pts)' },
+                        { value: 'stage', label: 'Stage (55 pts)' }
                       ]}
                       placeholder="Select Type"
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Date & Time</label>
+                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Date & Time</label>
                     <DatePicker 
                       selected={eventDate ? new Date(eventDate) : null}
                       onChange={(date: Date | null) => setEventDate(date ? date.toISOString() : '')}
@@ -613,25 +613,25 @@ export default function EventsTab() {
                       timeCaption="Time"
                       dateFormat="MMMM d, yyyy h:mm aa"
                       placeholderText="Select Date & Time"
-                      customInput={<input style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />}
+                      customInput={<input style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} />}
                     />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '0.8rem' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Max Supervisors (Max 5)</label>
-                    <input type="number" min="1" max="5" value={maxSupervisors} onChange={e => setMaxSupervisors(Math.min(5, Math.max(1, parseInt(e.target.value) || 1)))} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
+                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Max Supervisors (Max 5)</label>
+                    <input type="number" min="1" max="5" value={maxSupervisors} onChange={e => setMaxSupervisors(Math.min(5, Math.max(1, parseInt(e.target.value) || 1)))} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Points Awarded</label>
-                    <input type="number" min="1" value={points} onChange={e => setPoints(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
+                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Points Awarded</label>
+                    <input type="number" min="1" value={points} onChange={e => setPoints(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '0.8rem' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Event Visibility</label>
+                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Event Visibility</label>
                     <CustomSelect 
                       value={isPrivate ? 'private' : 'public'}
                       onChange={(val) => setIsPrivate(val === 'private')}
@@ -645,9 +645,9 @@ export default function EventsTab() {
                 </div>
 
                 {isPrivate && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(236,72,153,0.05)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(236,72,153,0.2)' }}>
-                    <label style={{ display: 'block', color: '#ec4899', fontSize: '0.9rem', fontWeight: 600 }}>Assign Supervisors ({maxSupervisors})</label>
-                    <div style={{ maxHeight: '140px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingRight: '0.5rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', background: 'rgba(236,72,153,0.05)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(236,72,153,0.2)' }}>
+                    <label style={{ display: 'block', color: '#ec4899', fontSize: '0.85rem', fontWeight: 600 }}>Assign Supervisors ({maxSupervisors})</label>
+                    <div style={{ maxHeight: '100px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem', paddingRight: '0.4rem' }}>
                       {assignedStaff.map((staffId, idx) => (
                         <div key={idx}>
                           <CustomSelect 
@@ -669,9 +669,9 @@ export default function EventsTab() {
                   </div>
                 )}
 
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                  <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.8rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" style={{ flex: 1, padding: '0.8rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>{editingEvent ? 'Save Changes' : 'Create Event'}</button>
+                <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem' }}>
+                  <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.6rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                  <button type="submit" style={{ flex: 1, padding: '0.6rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>{editingEvent ? 'Save Changes' : 'Create Event'}</button>
                 </div>
               </form>
             </motion.div>

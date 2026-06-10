@@ -555,9 +555,10 @@ export default function Dashboard() {
                 {chartType === 'bar' ? 'Area Chart' : 'Bar Chart'}
               </button>
             </div>
-            <div style={{ width: '100%', flex: 1, minHeight: '260px', minWidth: 0 }}>
-              <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
-                {chartType === 'bar' ? (
+            <div style={{ width: '100%', minHeight: '260px', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  {chartType === 'bar' ? (
                   <BarChart data={leaderboard.length === 1 ? [{ name: '', points: 0 }, ...leaderboard] : leaderboard} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                     <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
@@ -590,7 +591,8 @@ export default function Dashboard() {
                     <Area type="monotone" dataKey="points" stroke="var(--primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorPts)" />
                   </AreaChart>
                 )}
-              </ResponsiveContainer>
+                </ResponsiveContainer>
+              </div>
             </div>
           </motion.div>
 
