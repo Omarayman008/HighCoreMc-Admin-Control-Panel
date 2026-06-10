@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarDays, Mic, MessageSquare, Plus, Edit2, Trash2, UploadCloud, Check, X, ShieldAlert, Award } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { logAction } from '@/lib/logger';
 import CustomSelect from '@/components/CustomSelect';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -109,10 +110,14 @@ export default function EventsTab() {
       const { error: err } = await supabase.from('mc_events').update(eventPayload).eq('id', editingEvent.id);
       error = err;
       createdEventId = editingEvent.id;
+      if (!err) logAction('Update MC Event', 'Minecraft Events', `Updated event: ${title}`);
     } else {
       const { data, error: err } = await supabase.from('mc_events').insert(eventPayload).select().single();
       error = err;
-      if (data) createdEventId = data.id;
+      if (data) {
+        createdEventId = data.id;
+        logAction('Create MC Event', 'Minecraft Events', `Created new event: ${title} (${isPrivate ? 'Private' : 'Public'})`);
+      }
     }
 
     if (!error) {
@@ -179,6 +184,7 @@ export default function EventsTab() {
       onConfirm: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         await supabase.from('mc_events').delete().eq('id', id);
+        logAction('Delete MC Event', 'Minecraft Events', `Deleted event ID: ${id}`);
         fetchData();
       }
     });
@@ -234,6 +240,8 @@ export default function EventsTab() {
       }
     }
 
+    const currentEmp = employees.find(e => e.id.toString() === currentEmpId);
+
     const { error } = await supabase.from('mc_event_participants').insert({
       event_id: ev.id,
       emp_id: parseInt(currentEmpId),
@@ -242,6 +250,7 @@ export default function EventsTab() {
     });
 
     if (!error) {
+      logAction('Claim MC Event', 'Minecraft Events', `User ${currentEmp?.name} claimed event: ${ev.title}`);
       fetchData();
     } else {
       setConfirmConfig({
@@ -360,10 +369,10 @@ export default function EventsTab() {
               value={currentEmpId} 
               onChange={setCurrentEmpId} 
               options={[
-                { value: '', label: 'Simulate User As...' },
+                { value: '', label: 'All Employees (Select to Filter)' },
                 ...employees.map(e => ({ value: e.id.toString(), label: e.name }))
               ]} 
-              placeholder="Simulate User As..." 
+              placeholder="Filter by Employee..." 
             />
           </div>
 

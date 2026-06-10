@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckSquare, Plus, Clock, User, CheckCircle, Trash2, Edit2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { logAction } from '@/lib/logger';
 import CustomSelect from '@/components/CustomSelect';
 import ConfirmModal from '@/components/ConfirmModal';
 
@@ -93,9 +94,11 @@ export default function TasksTab() {
     if (editingTask) {
       const { error: err } = await supabase.from('mc_tasks').update(taskPayload).eq('id', editingTask.id);
       error = err;
+      if (!err) logAction('Update MC Task', 'Minecraft Tasks', `Updated task: ${title}`);
     } else {
       const { error: err } = await supabase.from('mc_tasks').insert(taskPayload);
       error = err;
+      if (!err) logAction('Create MC Task', 'Minecraft Tasks', `Created new task: ${title} (${isPrivate ? 'Private' : 'Public'})`);
     }
 
     if (!error) {
@@ -197,6 +200,7 @@ export default function TasksTab() {
       onConfirm: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         await supabase.from('mc_tasks').delete().eq('id', taskId);
+        logAction('Delete MC Task', 'Minecraft Tasks', `Deleted task ID: ${taskId}`);
         fetchData();
       }
     });
@@ -238,10 +242,10 @@ export default function TasksTab() {
               value={currentEmpId} 
               onChange={setCurrentEmpId} 
               options={[
-                { value: '', label: 'Simulate User As...' },
+                { value: '', label: 'All Employees (Select to Filter)' },
                 ...employees.map(e => ({ value: e.id.toString(), label: e.name }))
               ]} 
-              placeholder="Simulate User As..." 
+              placeholder="Filter by Employee..." 
             />
           </div>
 

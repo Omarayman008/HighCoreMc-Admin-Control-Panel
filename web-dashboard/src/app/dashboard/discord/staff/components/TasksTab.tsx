@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckSquare, Plus, Clock, User, CheckCircle, Trash2, Edit2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { logAction } from '@/lib/logger';
 import CustomSelect from '@/components/CustomSelect';
 import ConfirmModal from '@/components/ConfirmModal';
 
@@ -96,9 +97,11 @@ export default function TasksTab() {
     if (editingTask) {
       const { error: err } = await supabase.from('tasks').update(taskPayload).eq('id', editingTask.id);
       error = err;
+      if (!err) logAction('Update Task', 'Discord Tasks', `Updated task: ${title}`);
     } else {
       const { error: err } = await supabase.from('tasks').insert(taskPayload);
       error = err;
+      if (!err) logAction('Create Task', 'Discord Tasks', `Created new task: ${title} (${isPrivate ? 'Private' : 'Public'})`);
     }
 
     if (!error) {
@@ -205,6 +208,7 @@ export default function TasksTab() {
       onConfirm: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         await supabase.from('tasks').delete().eq('id', taskId);
+        logAction('Delete Task', 'Discord Tasks', `Deleted task ID: ${taskId}`);
         fetchData();
       }
     });
@@ -246,10 +250,10 @@ export default function TasksTab() {
               value={currentEmpId} 
               onChange={setCurrentEmpId} 
               options={[
-                { value: '', label: 'Simulate User As...' },
+                { value: '', label: 'All Employees (Select to Filter)' },
                 ...employees.map(e => ({ value: e.id.toString(), label: e.name }))
               ]} 
-              placeholder="Simulate User As..." 
+              placeholder="Filter by Employee..." 
             />
           </div>
 
