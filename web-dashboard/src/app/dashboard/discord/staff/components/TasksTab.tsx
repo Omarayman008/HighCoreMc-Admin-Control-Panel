@@ -30,16 +30,25 @@ export default function TasksTab() {
   // Simulated Logged In User Context
   const [employees, setEmployees] = useState<any[]>([]);
   const [currentEmpId, setCurrentEmpId] = useState('');
+  const [discordId, setDiscordId] = useState<string | null>(null);
 
   // Confirm Modal Config
-  const [confirmConfig, setConfirmConfig] = useState<{isOpen: boolean, type: 'danger'|'success'|'info', title: string, message: string, onConfirm: () => void}>({
-    isOpen: false, type: 'danger', title: '', message: '', onConfirm: () => {}
+  const [confirmConfig, setConfirmConfig] = useState<{ isOpen: boolean, type: 'danger' | 'success' | 'info', title: string, message: string, onConfirm: () => void }>({
+    isOpen: false, type: 'danger', title: '', message: '', onConfirm: () => { }
   });
 
   useEffect(() => {
     const auth = localStorage.getItem('adminAuth');
     const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
     if (auth === 'HighCoreadmin_@@' || isAdminLocal) setIsAdmin(true);
+
+    try {
+      const dUser = localStorage.getItem('discordUser');
+      if (dUser) {
+        const parsed = JSON.parse(dUser);
+        setDiscordId(parsed.id);
+      }
+    } catch (e) { }
 
     fetchData();
   }, []);
@@ -50,14 +59,13 @@ export default function TasksTab() {
       const [tasksRes, completionsRes, empsRes] = await Promise.all([
         supabase.from('tasks').select('*').in('section', ['dc', 'general']).order('created_at', { ascending: false }),
         supabase.from('completed_tasks').select('*'),
-        supabase.from('employees').select('id, name').order('name')
+        supabase.from('employees').select('id, name, discord_id').order('name')
       ]);
 
       if (tasksRes.data) setTasks(tasksRes.data);
       if (completionsRes.data) setCompletions(completionsRes.data);
       if (empsRes.data) {
         setEmployees(empsRes.data);
-        if (empsRes.data.length > 0) setCurrentEmpId(empsRes.data[0].id.toString());
       }
     } catch (err) {
       console.error(err);
@@ -140,24 +148,35 @@ export default function TasksTab() {
     setShowAddModal(true);
   };
 
-  const handleCompleteTask = (task: any) => {
-    if (!currentEmpId) return;
+  const loggedInEmp = employees.find(e => e.discord_id === discordId);
+  const loggedInEmpId = loggedInEmp ? loggedInEmp.id.toString() : null;
 
-    const currentEmp = employees.find(e => e.id.toString() === currentEmpId);
-    const loggedAdmin = localStorage.getItem('adminUsername') || 'Guest';
+  const handleCompleteTask = (task: any) => {
+    if (!loggedInEmpId) {
+      setConfirmConfig({
+        isOpen: true,
+        type: 'danger',
+        title: 'Error',
+        message: 'Could not identify your employee record. Make sure your Discord ID is linked.',
+        onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
+      });
+      return;
+    }
 
     setConfirmConfig({
       isOpen: true,
-      type: 'success',
+      type: 'info',
       title: 'Complete Task',
-      message: 'Confirm you have finished this task and claim your points.',
+      message: `Are you sure you want to mark "${task.title}" as completed?`,
       onConfirm: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
 
+        const loggedAdmin = localStorage.getItem('adminUsername') || 'System';
+
         const { error } = await supabase.from('completed_tasks').insert({
           task_id: task.id,
-          emp_id: parseInt(currentEmpId),
-          emp_name: currentEmp?.name || 'Unknown',
+          emp_id: parseInt(loggedInEmpId),
+          emp_name: loggedInEmp?.name || 'Unknown',
           points_awarded: task.points,
           completed_at: new Date().toISOString(),
           section_completed: 'dc',
@@ -165,7 +184,7 @@ export default function TasksTab() {
         });
 
         if (!error) {
-          const { data: empData } = await supabase.from('employees').select('points, dc_points').eq('id', currentEmpId).maybeSingle();
+          const { data: empData } = await supabase.from('employees').select('points, dc_points').eq('id', loggedInEmpId).maybeSingle();
           if (empData) {
             const currentTotal = empData.points || 0;
             const currentDc = empData.dc_points || 0;
@@ -173,11 +192,11 @@ export default function TasksTab() {
             await supabase.from('employees').update({
               points: currentTotal + task.points,
               dc_points: currentDc + task.points
-            }).eq('id', currentEmpId);
+            }).eq('id', loggedInEmpId);
 
             await supabase.from('activity_log').insert({
               action_type: 'Task Completed',
-              details: `${currentEmp?.name || 'Unknown'} completed task: ${task.title} (+${task.points} PTS)`,
+              details: `${loggedInEmp?.name || 'Unknown'} completed task: ${task.title} (+${task.points} PTS)`,
               category: 'Tasks',
               user_name: loggedAdmin
             });
@@ -224,7 +243,7 @@ export default function TasksTab() {
 
   return (
     <div style={{ position: 'relative' }}>
-      
+
       {/* Toast Notification */}
       <AnimatePresence>
         {completedPoints !== null && (
@@ -243,17 +262,17 @@ export default function TasksTab() {
       {/* Header options */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--foreground)' }}>Available Tasks</h2>
-        
+
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ width: '250px' }}>
-            <CustomSelect 
-              value={currentEmpId} 
-              onChange={setCurrentEmpId} 
+            <CustomSelect
+              value={currentEmpId}
+              onChange={setCurrentEmpId}
               options={[
                 { value: '', label: 'All Employees (Select to Filter)' },
                 ...employees.map(e => ({ value: e.id.toString(), label: e.name }))
-              ]} 
-              placeholder="Filter by Employee..." 
+              ]}
+              placeholder="Filter by Employee..."
             />
           </div>
 
@@ -276,12 +295,13 @@ export default function TasksTab() {
       ) : (
         <>
           {(() => {
-            const privateAssigned = tasks.filter(t => t.is_private && t.assigned_to === currentEmpId && !completions.some(c => c.task_id === t.id && c.emp_id === parseInt(currentEmpId)));
-            if (privateAssigned.length > 0) {
+            if (!loggedInEmpId) return null;
+            const myPrivateTasks = tasks.filter(t => t.is_private && t.assigned_to === loggedInEmpId && !completions.some(c => c.task_id === t.id && c.emp_id === parseInt(loggedInEmpId)));
+            if (myPrivateTasks.length > 0) {
               return (
                 <div style={{ marginBottom: '1.5rem', background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.3)', padding: '1rem', borderRadius: '12px', color: '#ec4899', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                   <div style={{ background: '#ec4899', width: '8px', height: '8px', borderRadius: '50%', boxShadow: '0 0 10px #ec4899' }}></div>
-                  تنبيه: لديك {privateAssigned.length} مهمة خاصة معينة لك بانتظار إنجازها!
+                  تنبيه: لديك {myPrivateTasks.length} مهمة خاصة معينة لك بانتظار إنجازها!
                 </div>
               );
             }
@@ -289,82 +309,79 @@ export default function TasksTab() {
           })()}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
             {tasks.length === 0 && <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', gridColumn: '1 / -1' }}>No active tasks available.</div>}
-          
-          {tasks.filter(t => !t.is_private || isAdmin || t.assigned_to === currentEmpId).map((task) => {
-            const hasCompleted = completions.some(c => c.task_id === task.id && c.emp_id === parseInt(currentEmpId));
-            const remaining = getDaysRemaining(task.created_at, task.duration_days);
-            const isExpired = remaining <= 0;
 
-            return (
-              <motion.div 
-                key={task.id} 
-                initial="initial"
-                animate="animate"
-                whileHover="hover"
-                variants={{ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } }}
-                transition={{ duration: 0.2 }}
-                style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}
-              >
-                
-                {/* Actions overlay */}
-                {isAdmin && (
-                  <motion.div 
-                    variants={{ initial: { opacity: 0, y: -10 }, animate: { opacity: 0, y: -10 }, hover: { opacity: 1, y: 0 } }}
-                    style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.5rem', zIndex: 10 }}
-                  >
-                    <button onClick={() => openEditTask(task)} style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)', color: 'var(--foreground)', border: 'none', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(5px)' }}>
-                      <Edit2 size={16} />
-                    </button>
-                    <button onClick={() => handleDeleteTask(task.id)} style={{ padding: '0.5rem', background: 'rgba(239,68,68,0.2)', color: '#ef4444', border: 'none', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(5px)' }}>
-                      <Trash2 size={16} />
-                    </button>
-                  </motion.div>
-                )}
+            {tasks.filter(t => currentEmpId ? (!t.is_private || t.assigned_to === currentEmpId) : (!t.is_private || t.assigned_to === loggedInEmpId || isAdmin)).map((task) => {
+              const hasCompleted = loggedInEmpId ? completions.some(c => c.task_id === task.id && c.emp_id === parseInt(loggedInEmpId)) : false;
+              const remaining = getDaysRemaining(task.created_at, task.duration_days);
+              const isExpired = remaining <= 0;
 
-                {/* Content */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', paddingRight: '4rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <CheckSquare size={18} color={task.is_private ? "#EC4899" : "#5865F2"} /> 
-                    {task.title}
-                    {task.is_private && <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: 'rgba(236,72,153,0.1)', color: '#ec4899', borderRadius: '10px', border: '1px solid rgba(236,72,153,0.2)' }}>Private</span>}
-                  </h3>
-                  <div style={{ background: 'rgba(88, 101, 242, 0.1)', color: '#5865F2', padding: '0.3rem 0.8rem', borderRadius: '20px', fontWeight: 700, fontSize: '0.9rem' }}>
-                    +{task.points}
-                  </div>
-                </div>
+              return (
+                <motion.div
+                  key={task.id}
+                  initial="initial"
+                  animate="animate"
+                  whileHover="hover"
+                  variants={{ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } }}
+                  transition={{ duration: 0.2 }}
+                  style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}
+                >
 
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', flex: 1, lineHeight: 1.6 }}>
-                  {task.description}
-                </p>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: isExpired ? '#ef4444' : '#eab308' }}>
-                    <Clock size={14} /> {isExpired ? 'Expired' : `${remaining} days left`}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text-muted)' }}>
-                    <User size={14} /> {task.is_private ? `For: ${employees.find(e => e.id.toString() === task.assigned_to)?.name || 'Unknown'}` : `By: ${task.created_by || 'Admin'}`}
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {(() => {
-                    const isAssignedPerson = task.is_private ? task.assigned_to === currentEmpId : true;
-                    const isDisabled = hasCompleted || isExpired || !currentEmpId || !isAssignedPerson;
-                    return (
-                      <button 
-                        onClick={() => handleCompleteTask(task)}
-                        disabled={isDisabled}
-                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: isDisabled ? 'rgba(255,255,255,0.05)' : '#5865F2', color: isDisabled ? 'var(--text-muted)' : '#fff', border: 'none', padding: '0.8rem', borderRadius: '10px', fontWeight: 600, cursor: isDisabled ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
-                      >
-                        <CheckCircle size={18} /> {hasCompleted ? 'Completed' : 'Complete Task'}
+                  {/* Actions overlay */}
+                  {isAdmin && (
+                    <motion.div
+                      variants={{ initial: { opacity: 0, y: -10 }, animate: { opacity: 0, y: -10 }, hover: { opacity: 1, y: 0 } }}
+                      style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.5rem', zIndex: 10 }}
+                    >
+                      <button onClick={() => openEditTask(task)} style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)', color: 'var(--foreground)', border: 'none', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(5px)' }}>
+                        <Edit2 size={16} />
                       </button>
-                    );
-                  })()}
-                </div>
+                      <button onClick={() => handleDeleteTask(task.id)} style={{ padding: '0.5rem', background: 'rgba(239,68,68,0.2)', color: '#ef4444', border: 'none', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(5px)' }}>
+                        <Trash2 size={16} />
+                      </button>
+                    </motion.div>
+                  )}
 
-              </motion.div>
-            );
-          })}
+                  {/* Content */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', paddingRight: '4rem' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <CheckSquare size={18} color={task.is_private ? "#EC4899" : "#5865F2"} />
+                      {task.title}
+                      {task.is_private && <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: 'rgba(236,72,153,0.1)', color: '#ec4899', borderRadius: '10px', border: '1px solid rgba(236,72,153,0.2)' }}>Private</span>}
+                    </h3>
+                    <div style={{ background: 'rgba(88, 101, 242, 0.1)', color: '#5865F2', padding: '0.3rem 0.8rem', borderRadius: '20px', fontWeight: 700, fontSize: '0.9rem' }}>
+                      +{task.points}
+                    </div>
+                  </div>
+
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', flex: 1, lineHeight: 1.6 }}>
+                    {task.description}
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: isExpired ? '#ef4444' : '#eab308' }}>
+                      <Clock size={14} /> {isExpired ? 'Expired' : `${remaining} days left`}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text-muted)' }}>
+                      <User size={14} /> {task.is_private ? `For: ${employees.find(e => e.id.toString() === task.assigned_to)?.name || 'Unknown'}` : `By: ${task.created_by || 'Admin'}`}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    {!isAdmin && (
+                      <button
+                        onClick={() => handleCompleteTask(task)}
+                        disabled={hasCompleted || isExpired || !loggedInEmpId || (task.is_private && task.assigned_to !== loggedInEmpId)}
+                        style={{ flex: 1, padding: '0.8rem', background: hasCompleted ? 'var(--glass-border)' : '#4ade80', color: hasCompleted ? 'var(--text-muted)' : '#000', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: (hasCompleted || isExpired || !loggedInEmpId) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
+                      >
+                        {hasCompleted ? <Check size={18} /> : <CheckCircle size={18} />}
+                        {hasCompleted ? 'Completed' : 'Complete Task'}
+                      </button>
+                    )}
+                  </div>
+
+                </motion.div>
+              );
+            })}
           </div>
         </>
       )}
@@ -375,7 +392,7 @@ export default function TasksTab() {
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '500px', padding: '2rem' }}>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '1.5rem' }}>{editingTask ? 'Edit Discord Task' : 'Add New Discord Task'}</h2>
-              
+
               <form onSubmit={handleCreateTask} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Task Title</label>
@@ -443,7 +460,7 @@ export default function TasksTab() {
         )}
       </AnimatePresence>
 
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={confirmConfig.isOpen}
         title={confirmConfig.title}
         message={confirmConfig.message}

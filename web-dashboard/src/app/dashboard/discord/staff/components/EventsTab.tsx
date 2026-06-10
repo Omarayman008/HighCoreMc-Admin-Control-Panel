@@ -72,7 +72,6 @@ export default function EventsTab() {
       if (supervisorsRes.data) setSupervisors(supervisorsRes.data);
       if (empsRes.data) {
         setEmployees(empsRes.data);
-        if (empsRes.data.length > 0) setCurrentEmpId(empsRes.data[0].id.toString());
       }
     } catch (err) {
       console.error(err);

@@ -99,50 +99,63 @@ export default function Dashboard() {
 
     async function fetchData() {
       try {
-        // 1. Total Players
-        const { count: whitelistCount } = await supabase.from('whitelist').select('*', { count: 'exact', head: true });
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const [
+          { count: whitelistCount },
+          { data: emps },
+          { data: setting },
+          { count: countToday },
+          { count: countAll },
+          { data: actsData },
+          { data: annData }
+        ] = await Promise.all([
+          supabase.from('whitelist').select('*', { count: 'exact', head: true }),
+          supabase.from('employees').select('*').order('points', { ascending: false }),
+          supabase.from('settings').select('value').eq('key', 'dc_status').single(),
+          supabase.from('tickets').select('*', { count: 'exact', head: true }).gte('created_at', startOfDay.toISOString()),
+          supabase.from('tickets').select('*', { count: 'exact', head: true }),
+          supabase.from('activity_log').select('*').in('category', ['Points', 'Ranks', 'Reports', 'Events', 'Tasks', 'Announcements']).order('created_at', { ascending: false }).limit(15),
+          supabase.from('settings').select('value').eq('key', 'announcements').maybeSingle()
+        ]);
+
         setTotalPlayers(whitelistCount || 0);
 
-        // 2. Employees (Points & Leaderboard)
-        const { data: emps } = await supabase.from('employees').select('*').order('points', { ascending: false });
-        let sumPts = 0;
         if (emps) {
           setEmployees(emps);
-          sumPts = emps.reduce((acc: number, curr: any) => acc + (curr.points || 0), 0);
+          const sumPts = emps.reduce((acc: number, curr: any) => acc + (curr.points || 0), 0);
           setTotalPoints(sumPts);
-          setLeaderboard(emps.slice(0, 6)); // Top 6 for chart
+          setLeaderboard(emps.slice(0, 6));
         }
 
-        // 3. Online Staff
-        const { data: setting } = await supabase.from('settings').select('value').eq('key', 'dc_status').single();
         if (setting && setting.value) {
           const dcData = typeof setting.value === 'string' ? JSON.parse(setting.value) : setting.value;
           setOnlineStaff(dcData.onlineStaff || 0);
         }
 
-        // 4. Tickets (Today & All Time)
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-        const { count: countToday } = await supabase.from('tickets').select('*', { count: 'exact', head: true }).gte('created_at', startOfDay.toISOString());
         setTicketsToday(countToday || 0);
-
-        const { count: countAll } = await supabase.from('tickets').select('*', { count: 'exact', head: true });
         setTotalTicketsAllTime(countAll || 0);
 
-        // 5. Activities from activity_log
-        const { data: actsData } = await supabase.from('activity_log')
-            .select('*')
-            .in('category', ['Points', 'Ranks', 'Reports', 'Events', 'Tasks', 'Announcements'])
-            .order('created_at', { ascending: false })
-            .limit(15);
         if (actsData && actsData.length > 0) {
           setActivities(actsData);
         } else {
           setActivities([{ id: 1, action_type: 'Dashboard Initialized', created_at: new Date().toISOString(), user_name: 'System', details: 'Dashboard loaded successfully.' }]);
         }
 
-        // 6. Announcements
-        await fetchAnnouncements();
+        if (annData && annData.value) {
+          try {
+            let parsed = typeof annData.value === 'string' ? JSON.parse(annData.value) : annData.value;
+            parsed.sort((a: any, b: any) => {
+              if (a.pinned && !b.pinned) return -1;
+              if (!a.pinned && b.pinned) return 1;
+              return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            });
+            setAnnouncements(parsed.slice(0, 4));
+          } catch(e) { console.error(e); }
+        } else {
+          setAnnouncements([]);
+        }
 
       } catch (err) {
         console.error("Error fetching dashboard data:", err);

@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import SettingsPage from './discord/management/settings/page';
+import ConfirmModal from '@/components/ConfirmModal';
 
 // Custom Mouse Glow Component
 function CursorGlow() {
@@ -62,6 +63,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [showSettingsOverlay, setShowSettingsOverlay] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState<{isOpen: boolean, type: 'danger'|'success'|'info', title: string, message: string, onConfirm: () => void}>({
+    isOpen: false, type: 'info', title: '', message: '', onConfirm: () => {}
+  });
 
   // Helper to check if user has a permission
   const hasPerm = useCallback((perm: string) => {
@@ -154,6 +159,56 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => {
       window.removeEventListener('app-settings-updated', handleSettingsUpdate);
     };
+    // Check for pending private tasks
+    const checkTasks = async () => {
+      try {
+        if (sessionStorage.getItem('hasSeenTaskAlert') === 'true') return;
+        
+        const dUserStr = localStorage.getItem('discordUser');
+        if (!dUserStr) return;
+        
+        const dUser = JSON.parse(dUserStr);
+        if (!dUser?.id) return;
+        
+        const { data: emps } = await supabase.from('employees').select('id, name').eq('discord_id', dUser.id);
+        if (!emps || emps.length === 0) return;
+        
+        const empId = emps[0].id;
+        
+        const { data: tasks } = await supabase.from('tasks').select('*').eq('is_private', true).eq('status', 'active').eq('assigned_to', empId.toString());
+        const { data: mcTasks } = await supabase.from('mc_tasks').select('*').eq('is_private', true).eq('status', 'active').eq('assigned_to', empId.toString());
+        
+        const totalAssigned = (tasks?.length || 0) + (mcTasks?.length || 0);
+        if (totalAssigned > 0) {
+          const { data: comp } = await supabase.from('completed_tasks').select('task_id').eq('emp_id', empId);
+          const { data: mcComp } = await supabase.from('mc_completions').select('task_id').eq('emp_id', empId);
+          
+          const completedIds = new Set([
+            ...(comp?.map(c => c.task_id) || []),
+            ...(mcComp?.map(c => c.task_id) || [])
+          ]);
+          
+          let pendingTasks = 0;
+          tasks?.forEach(t => { if (!completedIds.has(t.id)) pendingTasks++; });
+          mcTasks?.forEach(t => { if (!completedIds.has(t.id)) pendingTasks++; });
+          
+          if (pendingTasks > 0) {
+            setConfirmConfig({
+              isOpen: true,
+              type: 'success',
+              title: 'تنبيه مهام جديدة',
+              message: `مرحباً ${emps[0].name}، نزل عليك ${pendingTasks} مهام خاصة بانتظار إنجازها! الرجاء مراجعتها في قسم المهام.`,
+              onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
+            });
+            sessionStorage.setItem('hasSeenTaskAlert', 'true');
+          }
+        }
+      } catch (err) {
+        console.error("Error checking tasks:", err);
+      }
+    };
+
+    checkTasks();
   }, [pathname]);
 
   useEffect(() => {
@@ -630,6 +685,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Right Container: Header + Main Content */}
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100vh', overflow: 'hidden' }}>
+
+        <ConfirmModal 
+          isOpen={confirmConfig.isOpen}
+          type={confirmConfig.type}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          onConfirm={confirmConfig.onConfirm}
+          onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
+          confirmText="OK"
+          cancelText=""
+        />
 
         {/* Exit Preview Banner */}
         {isPreviewMode && (

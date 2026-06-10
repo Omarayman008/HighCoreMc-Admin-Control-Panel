@@ -29,16 +29,28 @@ export default function TasksTab() {
 
   const [employees, setEmployees] = useState<any[]>([]);
   const [currentEmpId, setCurrentEmpId] = useState('');
+  const [discordId, setDiscordId] = useState<string | null>(null);
 
   const [confirmConfig, setConfirmConfig] = useState<{isOpen: boolean, type: 'danger'|'success'|'info', title: string, message: string, onConfirm: () => void}>({
     isOpen: false, type: 'danger', title: '', message: '', onConfirm: () => {}
   });
 
   useEffect(() => {
-    const auth = localStorage.getItem('adminAuth');
-    const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
-    if (auth === 'HighCoreadmin_@@' || isAdminLocal) setIsAdmin(true);
+    const checkAdmin = () => {
+      const auth = localStorage.getItem('adminAuth');
+      const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
+      if (auth === 'HighCoreadmin_@@' || isAdminLocal) setIsAdmin(true);
+      
+      try {
+        const dUser = localStorage.getItem('discordUser');
+        if (dUser) {
+          const parsed = JSON.parse(dUser);
+          setDiscordId(parsed.id);
+        }
+      } catch (e) {}
+    };
 
+    checkAdmin();
     fetchData();
   }, []);
 
@@ -47,14 +59,13 @@ export default function TasksTab() {
     try {
       const [tasksRes, empsRes, compRes] = await Promise.all([
         supabase.from('mc_tasks').select('*, employees(name)').eq('status', 'active').order('created_at', { ascending: false }),
-        supabase.from('employees').select('id, name').order('name'),
+        supabase.from('employees').select('id, name, discord_id').order('name'),
         supabase.from('mc_completions').select('*')
       ]);
 
       if (tasksRes.data) setTasks(tasksRes.data);
       if (empsRes.data) {
         setEmployees(empsRes.data);
-        if (empsRes.data.length > 0) setCurrentEmpId(empsRes.data[0].id.toString());
       }
       if (compRes.data) setCompletions(compRes.data);
     } catch (err) {
@@ -137,10 +148,21 @@ export default function TasksTab() {
     setShowAddModal(true);
   };
 
-  const handleCompleteTask = (task: any) => {
-    if (!currentEmpId) return;
+  const loggedInEmp = employees.find(e => e.discord_id === discordId);
+  const loggedInEmpId = loggedInEmp ? loggedInEmp.id.toString() : null;
 
-    const currentEmp = employees.find(e => e.id.toString() === currentEmpId);
+  const handleCompleteTask = (task: any) => {
+    if (!loggedInEmpId) {
+      setConfirmConfig({
+        isOpen: true,
+        type: 'danger',
+        title: 'Error',
+        message: 'Could not identify your employee record. Make sure your Discord ID is linked.',
+        onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
+      });
+      return;
+    }
+
     const loggedAdmin = localStorage.getItem('adminUsername') || 'Guest';
 
     setConfirmConfig({
@@ -153,11 +175,11 @@ export default function TasksTab() {
 
         const { error } = await supabase.from('mc_completions').insert({
           task_id: task.id,
-          emp_id: parseInt(currentEmpId)
+          emp_id: parseInt(loggedInEmpId)
         });
 
         if (!error) {
-          const { data: empData } = await supabase.from('employees').select('points, mc_points').eq('id', currentEmpId).maybeSingle();
+          const { data: empData } = await supabase.from('employees').select('points, mc_points').eq('id', loggedInEmpId).maybeSingle();
           if (empData) {
             const currentTotal = empData.points || 0;
             const currentMc = empData.mc_points || 0;
@@ -165,11 +187,11 @@ export default function TasksTab() {
             await supabase.from('employees').update({
               points: currentTotal + task.points,
               mc_points: currentMc + task.points
-            }).eq('id', currentEmpId);
+            }).eq('id', loggedInEmpId);
 
             await supabase.from('activity_log').insert({
               action_type: 'MC Task Completed',
-              details: `${currentEmp?.name || 'Unknown'} completed Minecraft task: ${task.title} (+${task.points} PTS)`,
+              details: `${loggedInEmp?.name || 'Unknown'} completed Minecraft task: ${task.title} (+${task.points} PTS)`,
               category: 'Tasks',
               user_name: loggedAdmin
             });
@@ -268,12 +290,13 @@ export default function TasksTab() {
       ) : (
         <>
           {(() => {
-            const privateAssigned = tasks.filter(t => t.is_private && t.assigned_to === currentEmpId && !completions.some(c => c.task_id === t.id && c.emp_id === parseInt(currentEmpId)));
-            if (privateAssigned.length > 0) {
+            if (!loggedInEmpId) return null;
+            const myPrivateTasks = tasks.filter(t => t.is_private && t.assigned_to === loggedInEmpId && !completions.some(c => c.task_id === t.id && c.emp_id === parseInt(loggedInEmpId)));
+            if (myPrivateTasks.length > 0) {
               return (
                 <div style={{ marginBottom: '1.5rem', background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.3)', padding: '1rem', borderRadius: '12px', color: '#ec4899', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                   <div style={{ background: '#ec4899', width: '8px', height: '8px', borderRadius: '50%', boxShadow: '0 0 10px #ec4899' }}></div>
-                  تنبيه: لديك {privateAssigned.length} مهمة خاصة معينة لك بانتظار إنجازها!
+                  تنبيه: لديك {myPrivateTasks.length} مهمة خاصة معينة لك بانتظار إنجازها!
                 </div>
               );
             }
@@ -282,8 +305,8 @@ export default function TasksTab() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
             {tasks.length === 0 && <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', gridColumn: '1 / -1' }}>No active tasks available.</div>}
           
-          {tasks.filter(t => !t.is_private || isAdmin || t.assigned_to === currentEmpId).map((task) => {
-            const hasCompleted = completions.some(c => c.task_id === task.id && c.emp_id === parseInt(currentEmpId));
+          {tasks.filter(t => currentEmpId ? (!t.is_private || t.assigned_to === currentEmpId) : (!t.is_private || t.assigned_to === loggedInEmpId || isAdmin)).map((task) => {
+            const hasCompleted = loggedInEmpId ? completions.some(c => c.task_id === task.id && c.emp_id === parseInt(loggedInEmpId)) : false;
             const remaining = getDaysRemaining(task.created_at, task.days_limit);
             const isExpired = remaining <= 0;
 
@@ -340,8 +363,8 @@ export default function TasksTab() {
 
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   {(() => {
-                    const isAssignedPerson = task.is_private ? task.assigned_to === currentEmpId : true;
-                    const isDisabled = hasCompleted || isExpired || !currentEmpId || !isAssignedPerson;
+                    const isAssignedPerson = task.is_private ? task.assigned_to === loggedInEmpId : true;
+                    const isDisabled = hasCompleted || isExpired || !loggedInEmpId || !isAssignedPerson;
                     return (
                       <button 
                         onClick={() => handleCompleteTask(task)}
