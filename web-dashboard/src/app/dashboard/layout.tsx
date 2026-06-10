@@ -50,7 +50,6 @@ function CursorGlow() {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [theme, setTheme] = useState('dark');
   const [isMcOpen, setIsMcOpen] = useState(false);
@@ -63,7 +62,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Helper to check if user has a permission
   const hasPerm = (perm: string) => {
-    if (isAdmin || userPermissions.includes('*')) return true;
+    if (userPermissions.includes('*')) return true;
     return userPermissions.includes(perm);
   };
 
@@ -92,13 +91,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         router.push(`/?error=login_required&redirect_to=${encodeURIComponent(currentPath)}`);
       } else {
         setIsAuthorized(true);
-        if (auth === adminPass) {
-          setIsAdmin(true);
-          localStorage.setItem('isAdmin', 'true');
-        } else {
-          setIsAdmin(false);
-          localStorage.setItem('isAdmin', 'false');
-        }
         
         if (localStorage.getItem('preview_mode') === 'true') {
           setIsPreviewMode(true);

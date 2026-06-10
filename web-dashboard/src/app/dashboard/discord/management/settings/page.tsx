@@ -323,7 +323,20 @@ const TOTAL_PERMISSIONS = PERMISSIONS_GROUPS.reduce((acc, g) => acc + g.permissi
 
 // Main Component
 export default function SettingsPage() {
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [hasAccess, setHasAccess] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const permsStr = localStorage.getItem('userPermissions');
+      if (permsStr) {
+        try {
+          const perms = JSON.parse(permsStr);
+          return perms.includes('view_settings') || perms.includes('*');
+        } catch (e) {
+          return false;
+        }
+      }
+    }
+    return false;
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -395,21 +408,7 @@ export default function SettingsPage() {
 
   // Initial Load
   useEffect(() => {
-    const checkIsAdmin = async () => {
-      const auth = localStorage.getItem('adminAuth');
-      let adminPass = 'HighCoreadmin_@@';
-      try {
-        const { data } = await supabase.from('settings').select('value').eq('key', 'app_settings').maybeSingle();
-        if (data && data.value) {
-          const parsed = JSON.parse(data.value);
-          if (parsed?.security?.adminPassword) adminPass = parsed.security.adminPassword;
-        }
-      } catch (err) {
-        console.error(err);
-      }
-      if (auth === adminPass) setIsAdmin(true);
-    };
-    checkIsAdmin();
+    // Initial load
     fetchData();
   }, []);
 
@@ -730,7 +729,7 @@ export default function SettingsPage() {
   };
 
   // Auth Guard
-  if (!isAdmin && !isLoading) {
+  if (!hasAccess) {
     return (
       <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--foreground)' }}>
         <ShieldAlert size={48} color="#EF4444" style={{ margin: '0 auto 1.5rem' }} />
