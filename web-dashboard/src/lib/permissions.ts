@@ -4,8 +4,9 @@ export function hasPermission(permission: string): boolean {
   if (typeof window === 'undefined') return false;
   
   const auth = localStorage.getItem('adminAuth');
-  const isAdmin = localStorage.getItem('isAdmin') === 'true' || auth === 'HighCoreadmin_@@';
-  if (isAdmin) return true;
+
+  // Hardcoded owner fallback (only if userPermissions is totally empty/missing or they need a backdoor, but generally rely on DB)
+  // Removed `if (isAdmin) return true;` to strictly enforce DB permissions.
 
   try {
     const permsStr = localStorage.getItem('userPermissions');

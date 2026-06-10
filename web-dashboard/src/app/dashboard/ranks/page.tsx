@@ -64,7 +64,7 @@ const CustomSelect = ({ options, value, onChange, placeholder }: any) => {
 export default function RanksPage() {
   const [ranks, setRanks] = useState<Rank[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const [hasAccess, setHasAccess] = useState<boolean>(() => hasPermission('view_ranks'));
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -88,7 +88,6 @@ export default function RanksPage() {
   const colors = ['#FCD34D', '#A78BFA', '#22D3EE', '#FB923C', '#60A5FA', '#A855F7', '#34D399', '#F87171', '#94A3B8'];
 
   useEffect(() => {
-    setHasAccess(hasPermission('view_ranks'));
     fetchData();
   }, []);
 
@@ -200,9 +199,6 @@ export default function RanksPage() {
     }
   };
 
-  if (hasAccess === null || isLoading) {
-    return <div style={{ color: 'var(--foreground)', textAlign: 'center', padding: '4rem' }}>Loading...</div>;
-  }
   if (!hasAccess) {
     return <div style={{ padding: '2rem', color: 'var(--foreground)' }}>You do not have permission to view this page.</div>;
   }

@@ -633,6 +633,29 @@ export default function SettingsPage() {
     setNewRoleColor('#6366f1');
   };
 
+  const handlePreviewRole = (role: any) => {
+    try {
+      const allPerms = role.permissions || [];
+      if (allPerms.length === 0) {
+        alert("This role doesn't have any permissions enabled!");
+        return;
+      }
+      localStorage.setItem('preview_original_permissions', localStorage.getItem('userPermissions') || '[]');
+      localStorage.setItem('preview_original_isAdmin', localStorage.getItem('isAdmin') || 'false');
+      localStorage.setItem('preview_original_username', localStorage.getItem('adminUsername') || 'Admin');
+      
+      localStorage.setItem('preview_mode', 'true');
+      localStorage.setItem('userPermissions', JSON.stringify(allPerms));
+      localStorage.setItem('isAdmin', 'false');
+      localStorage.setItem('adminUsername', '[Role Preview] ' + role.name);
+      
+      window.location.reload();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to enter preview mode");
+    }
+  };
+
   const handleDeleteRole = (id: string) => {
     const roleToDelete = adminRoles.find(r => r.id === id);
     if (roleToDelete?.is_fixed) {
@@ -1367,16 +1390,16 @@ export default function SettingsPage() {
                                   />
                                 </div>
 
-                                {!role.is_fixed ? (
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleDeleteRole(role.id);
+                                      handlePreviewRole(role);
                                     }}
+                                    title="Preview Dashboard as this Role"
                                     style={{
                                       background: 'transparent',
                                       border: 'none',
-                                      color: '#EF4444',
+                                      color: '#a78bfa',
                                       cursor: 'pointer',
                                       padding: '0.4rem',
                                       display: 'flex',
@@ -1388,11 +1411,34 @@ export default function SettingsPage() {
                                     onMouseEnter={e => e.currentTarget.style.opacity = '1'}
                                     onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
                                   >
-                                    <Trash2 size={16} />
+                                    <Eye size={16} />
                                   </button>
-                                ) : (
-                                  <div style={{ width: '32px' }} />
-                                )}
+                                  {!role.is_fixed ? (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteRole(role.id);
+                                      }}
+                                      style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: '#EF4444',
+                                        cursor: 'pointer',
+                                        padding: '0.4rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        opacity: 0.7,
+                                        transition: 'opacity 0.2s'
+                                      }}
+                                      onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                      onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  ) : (
+                                    <div style={{ width: '32px' }} />
+                                  )}
                               </div>
                             );
                           })}

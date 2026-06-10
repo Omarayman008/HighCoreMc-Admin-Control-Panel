@@ -620,6 +620,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Right Container: Header + Main Content */}
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, height: '100vh', overflow: 'hidden' }}>
 
+        {/* Exit Preview Banner */}
+        {isPreviewMode && (
+          <div style={{ background: '#f87171', color: '#fff', zIndex: 9999, textAlign: 'center', padding: '0.6rem', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', boxShadow: '0 4px 15px rgba(248, 113, 113, 0.4)', flexShrink: 0 }}>
+            You are currently in Staff Preview Mode.
+            <button onClick={handleExitPreview} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(0,0,0,0.1)', color: 'white', padding: '0.3rem 0.8rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 800 }}>Exit Preview</button>
+          </div>
+        )}
+
         {/* Top Header */}
         <header style={{
           height: '80px',
@@ -659,16 +667,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        {/* Exit Preview Banner */}
-        {isPreviewMode && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, background: '#f87171', color: '#fff', zIndex: 9999, textAlign: 'center', padding: '0.5rem', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', boxShadow: '0 4px 15px rgba(248, 113, 113, 0.4)' }}>
-            You are currently in Staff Preview Mode.
-            <button onClick={handleExitPreview} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(0,0,0,0.1)', color: 'white', padding: '0.3rem 0.8rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 800 }}>Exit Preview</button>
-          </div>
-        )}
-
         {/* Main Content */}
-        <main style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto', zIndex: 1, direction: 'ltr', paddingTop: isPreviewMode ? '4rem' : '2rem' }}>
+        <main style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto', zIndex: 1, direction: 'ltr' }}>
           {children}
         </main>
       </div>

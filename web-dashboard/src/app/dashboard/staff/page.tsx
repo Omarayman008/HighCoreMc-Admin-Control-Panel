@@ -80,7 +80,7 @@ const CustomSelect = ({ options, value, onChange, placeholder }: any) => {
 export default function StaffPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [ranks, setRanks] = useState<Rank[]>([]);
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const [hasAccess, setHasAccess] = useState<boolean>(() => hasPermission('view_employees'));
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -118,7 +118,6 @@ export default function StaffPage() {
   ];
 
   useEffect(() => {
-    setHasAccess(hasPermission('view_employees'));
     fetchData();
   }, []);
 
@@ -386,8 +385,9 @@ export default function StaffPage() {
 
   const filteredEmployees = employees.filter(e => e.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  if (hasAccess === null || isLoading) return <div style={{ color: 'var(--foreground)', textAlign: 'center', padding: '4rem' }}>Loading...</div>;
-  if (!hasAccess) return <div style={{ padding: '2rem', color: 'var(--foreground)' }}>You do not have permission to view this page.</div>;
+  if (!hasAccess) {
+    return <div style={{ padding: '2rem', color: 'var(--foreground)' }}>You do not have permission to view this page.</div>;
+  }
 
   return (
     <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto', overflowY: 'auto', height: '100%' }}>
