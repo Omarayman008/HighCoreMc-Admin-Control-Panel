@@ -58,6 +58,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isManagementOpen, setIsManagementOpen] = useState(false);
   const [settings, setSettings] = useState<any>(null);
   const [sidebarLogo, setSidebarLogo] = useState<any>(null);
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+
+  // Helper to check if user has a permission
+  const hasPerm = (perm: string) => {
+    if (isAdmin || userPermissions.includes('*')) return true;
+    return userPermissions.includes(perm);
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -90,6 +98,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         } else {
           setIsAdmin(false);
           localStorage.setItem('isAdmin', 'false');
+        }
+        
+        if (localStorage.getItem('preview_mode') === 'true') {
+          setIsPreviewMode(true);
+        }
+
+        const permsStr = localStorage.getItem('userPermissions');
+        if (permsStr) {
+          try {
+            setUserPermissions(JSON.parse(permsStr));
+          } catch (e) {
+            setUserPermissions([]);
+          }
         }
       }
     };
@@ -306,11 +327,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/');
   };
 
+  const handleExitPreview = () => {
+    localStorage.setItem('userPermissions', localStorage.getItem('preview_original_permissions') || '[]');
+    localStorage.setItem('isAdmin', localStorage.getItem('preview_original_isAdmin') || 'false');
+    localStorage.setItem('adminUsername', localStorage.getItem('preview_original_username') || 'Admin');
+    localStorage.removeItem('preview_mode');
+    localStorage.removeItem('preview_original_permissions');
+    localStorage.removeItem('preview_original_isAdmin');
+    localStorage.removeItem('preview_original_username');
+    window.location.reload();
+  };
+
   const navItems = [
-    { name: settings?.tabs?.dashboard || 'Dashboard', icon: <Home size={20} />, path: '/dashboard' },
-    { name: settings?.tabs?.employees || 'Staff', icon: <Users size={20} />, path: '/dashboard/staff' },
-    { name: settings?.tabs?.ranks || 'Ranks', icon: <Award size={20} />, path: '/dashboard/ranks' },
-  ];
+    { name: settings?.tabs?.dashboard || 'Dashboard', icon: <Home size={20} />, path: '/dashboard', perm: 'view_dashboard' },
+    { name: settings?.tabs?.employees || 'Staff', icon: <Users size={20} />, path: '/dashboard/staff', perm: 'view_employees' },
+    { name: settings?.tabs?.ranks || 'Ranks', icon: <Award size={20} />, path: '/dashboard/ranks', perm: 'view_ranks' },
+  ].filter(item => hasPerm(item.perm));
 
   if (isAuthorized === null) {
     return (
@@ -364,7 +396,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0.5rem 1rem 0.2rem' }}>General</div>
+          {navItems.length > 0 && <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0.5rem 1rem 0.2rem' }}>General</div>}
           {navItems.map((item) => {
             const isActive = pathname === item.path;
             return (
@@ -392,9 +424,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )
           })}
 
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '1rem 1rem 0.2rem' }}>Servers</div>
+          {(hasPerm('view_mc_status') || hasPerm('view_mc_staff') || hasPerm('view_dc_status') || hasPerm('view_dc_staff') || hasPerm('view_forums') || hasPerm('view_tickets')) && (
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '1rem 1rem 0.2rem' }}>Servers</div>
+          )}
 
           {/* Minecraft Collapsible Menu */}
+          {(hasPerm('view_mc_status') || hasPerm('view_mc_staff')) && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
             <div
               onClick={() => setIsMcOpen(!isMcOpen)}
@@ -426,9 +461,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               height: isMcOpen ? 'auto' : '0', overflow: 'hidden', opacity: isMcOpen ? 1 : 0, transition: 'all 0.3s ease-in-out'
             }}>
               {[
-                { name: settings?.tabs?.mcStatus || 'Server Status', path: '/dashboard/minecraft/status', icon: <Activity size={16} /> },
-                { name: settings?.tabs?.mcStaff || 'MC Staff', path: '/dashboard/minecraft/staff', icon: <Users size={16} /> }
-              ].map(sub => {
+                { name: settings?.tabs?.mcStatus || 'Server Status', path: '/dashboard/minecraft/status', icon: <Activity size={16} />, perm: 'view_mc_status' },
+                { name: settings?.tabs?.mcStaff || 'MC Staff', path: '/dashboard/minecraft/staff', icon: <Users size={16} />, perm: 'view_mc_staff' }
+              ].filter(sub => hasPerm(sub.perm)).map(sub => {
                 const isSubActive = pathname === sub.path;
                 return (
                   <Link key={sub.path} href={sub.path} style={{ textDecoration: 'none' }}>
@@ -450,8 +485,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               })}
             </div>
           </div>
+          )}
 
           {/* Discord Collapsible Menu */}
+          {(hasPerm('view_dc_status') || hasPerm('view_dc_staff') || hasPerm('view_forums') || hasPerm('view_tickets')) && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
             <div
               onClick={() => setIsDcOpen(!isDcOpen)}
@@ -485,11 +522,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               height: isDcOpen ? 'auto' : '0', overflow: 'hidden', opacity: isDcOpen ? 1 : 0, transition: 'all 0.3s ease-in-out'
             }}>
               {[
-                { name: settings?.tabs?.dcStatus || 'Server Status', path: '/dashboard/discord/status', icon: <Activity size={16} /> },
-                { name: settings?.tabs?.dcStaff || 'DC Staff', path: '/dashboard/discord/staff', icon: <Users size={16} /> },
-                { name: settings?.tabs?.forums || 'Forums', path: '/dashboard/discord/forums', icon: <MessageSquare size={16} /> },
-                { name: settings?.tickets?.tabName || 'Tickets', path: '/dashboard/discord/tickets', icon: <Ticket size={16} /> }
-              ].map(sub => {
+                { name: settings?.tabs?.dcStatus || 'Server Status', path: '/dashboard/discord/status', icon: <Activity size={16} />, perm: 'view_dc_status' },
+                { name: settings?.tabs?.dcStaff || 'DC Staff', path: '/dashboard/discord/staff', icon: <Users size={16} />, perm: 'view_dc_staff' },
+                { name: settings?.tabs?.forums || 'Forums', path: '/dashboard/discord/forums', icon: <MessageSquare size={16} />, perm: 'view_forums' },
+                { name: settings?.tickets?.tabName || 'Tickets', path: '/dashboard/discord/tickets', icon: <Ticket size={16} />, perm: 'view_tickets' }
+              ].filter(sub => hasPerm(sub.perm)).map(sub => {
                 const isSubActive = pathname === sub.path;
                 return (
                   <Link key={sub.path} href={sub.path} style={{ textDecoration: 'none' }}>
@@ -511,9 +548,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               })}
             </div>
           </div>
+          )}
 
           {/* Management */}
-          {isAdmin && (
+          {(hasPerm('view_settings') || hasPerm('view_logs')) && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginTop: 'auto' }}>
               <div 
                 onClick={() => setIsManagementOpen(!isManagementOpen)}
@@ -550,9 +588,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 transition: 'all 0.3s ease-in-out'
               }}>
                 {[
-                  { name: 'Settings', path: '/dashboard/discord/management/settings', icon: <Settings size={16} /> },
-                  { name: 'Logs', path: '/dashboard/discord/management/logs', icon: <Activity size={16} /> }
-                ].map(sub => {
+                  { name: 'Settings', path: '/dashboard/discord/management/settings', icon: <Settings size={16} />, perm: 'view_settings' },
+                  { name: 'Logs', path: '/dashboard/discord/management/logs', icon: <Activity size={16} />, perm: 'view_logs' }
+                ].filter(sub => hasPerm(sub.perm)).map(sub => {
                   const isSubActive = pathname === sub.path;
                   return (
                     <Link key={sub.path} href={sub.path} style={{ textDecoration: 'none' }}>
@@ -621,8 +659,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
+        {/* Exit Preview Banner */}
+        {isPreviewMode && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, background: '#f87171', color: '#fff', zIndex: 9999, textAlign: 'center', padding: '0.5rem', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', boxShadow: '0 4px 15px rgba(248, 113, 113, 0.4)' }}>
+            You are currently in Staff Preview Mode.
+            <button onClick={handleExitPreview} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(0,0,0,0.1)', color: 'white', padding: '0.3rem 0.8rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 800 }}>Exit Preview</button>
+          </div>
+        )}
+
         {/* Main Content */}
-        <main style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto', zIndex: 1, direction: 'ltr' }}>
+        <main style={{ flex: 1, padding: '2rem 3rem', overflowY: 'auto', zIndex: 1, direction: 'ltr', paddingTop: isPreviewMode ? '4rem' : '2rem' }}>
           {children}
         </main>
       </div>

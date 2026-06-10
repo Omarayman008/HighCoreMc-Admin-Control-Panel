@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Plus, Edit2, Trash2, Star, Briefcase, X, AlertCircle, Shield, Award, Search, TrendingUp, ChevronDown } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, Star, Briefcase, X, AlertCircle, Shield, Award, Search, TrendingUp, ChevronDown, Eye } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { hasPermission } from '@/lib/permissions';
 
@@ -80,7 +80,7 @@ const CustomSelect = ({ options, value, onChange, placeholder }: any) => {
 export default function StaffPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [ranks, setRanks] = useState<Rank[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -118,9 +118,7 @@ export default function StaffPage() {
   ];
 
   useEffect(() => {
-    const auth = localStorage.getItem('adminAuth');
-    const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
-    if (auth === 'HighCoreadmin_@@' || isAdminLocal) setIsAdmin(true);
+    setHasAccess(hasPermission('view_employees'));
     fetchData();
   }, []);
 
@@ -342,9 +340,54 @@ export default function StaffPage() {
     fetchData();
   };
 
+  const handlePreviewStaff = async (emp: Employee) => {
+    setIsSubmitting(true);
+    try {
+      const { data: rolesData } = await supabase.from('roles').select('*');
+      if (!rolesData) return;
+      
+      const empTitles = emp.job_titles?.map(j => j.title) || [emp.role];
+      const matchingRoles = rolesData.filter(r => empTitles.includes(r.name));
+      
+      let allPerms: string[] = [];
+      matchingRoles.forEach(r => {
+        if (Array.isArray(r.permissions)) {
+          allPerms = [...allPerms, ...r.permissions];
+        }
+      });
+      // Remove duplicates
+      allPerms = Array.from(new Set(allPerms));
+      
+      if (allPerms.length === 0) {
+        alert("This staff member doesn't have any permissions set in the Roles settings!");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Save current state
+      localStorage.setItem('preview_original_permissions', localStorage.getItem('userPermissions') || '[]');
+      localStorage.setItem('preview_original_isAdmin', localStorage.getItem('isAdmin') || 'false');
+      localStorage.setItem('preview_original_username', localStorage.getItem('adminUsername') || 'Admin');
+      
+      // Set preview state
+      localStorage.setItem('preview_mode', 'true');
+      localStorage.setItem('userPermissions', JSON.stringify(allPerms));
+      localStorage.setItem('isAdmin', 'false');
+      localStorage.setItem('adminUsername', '[Preview] ' + emp.name);
+      
+      // Reload to apply
+      window.location.reload();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to enter preview mode");
+    }
+    setIsSubmitting(false);
+  };
+
   const filteredEmployees = employees.filter(e => e.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  if (!isAdmin) return <div style={{ padding: '2rem', color: 'var(--foreground)' }}>You do not have permission to view this page.</div>;
+  if (hasAccess === null || isLoading) return <div style={{ color: 'var(--foreground)', textAlign: 'center', padding: '4rem' }}>Loading...</div>;
+  if (!hasAccess) return <div style={{ padding: '2rem', color: 'var(--foreground)' }}>You do not have permission to view this page.</div>;
 
   return (
     <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto', overflowY: 'auto', height: '100%' }}>
@@ -378,10 +421,7 @@ export default function StaffPage() {
         </div>
       </div>
 
-      {isLoading ? (
-        <div style={{ color: 'var(--foreground)', textAlign: 'center', padding: '4rem' }}>Loading...</div>
-      ) : (
-        <>
+      {/* Content rendered below */}
           {/* Desktop Table View */}
           <div className="desktop-only" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -481,6 +521,11 @@ export default function StaffPage() {
                                 <Edit2 size={16} style={{ margin: 'auto' }} />
                               </button>
                             )}
+                            {hasPermission('staff_preview') && (
+                              <button onClick={() => handlePreviewStaff(emp)} title="Preview as Staff" style={{ background: 'rgba(167, 139, 250, 0.1)', border: '1px solid rgba(167, 139, 250, 0.2)', color: '#a78bfa', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(167, 139, 250, 0.2)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(167, 139, 250, 0.1)' }}>
+                                <Eye size={16} style={{ margin: 'auto' }} />
+                              </button>
+                            )}
                             {hasPermission('delete_employee') && (
                               <button onClick={() => { setSelectedEmpId(emp.id); setShowDeleteModal(true); }} title="Delete Staff" style={{ background: 'rgba(248, 113, 113, 0.1)', border: '1px solid rgba(248, 113, 113, 0.2)', color: '#f87171', width: '36px', height: '36px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248, 113, 113, 0.2)' }} onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248, 113, 113, 0.1)' }}>
                                 <Trash2 size={16} style={{ margin: 'auto' }} />
@@ -555,6 +600,9 @@ export default function StaffPage() {
                       {hasPermission('edit_employee') && (
                         <button onClick={() => { setEditingEmployee(emp); setStaffForm({ name: emp.name, role: emp.role, discord_id: emp.discord_id || '', avatar: emp.avatar, color: emp.color, points: emp.points, rank_override: emp.rank_override || '' }); setShowStaffModal(true); }} style={{ flex: 1, background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '0.8rem', borderRadius: '10px' }}><Edit2 size={18} style={{ margin: 'auto' }} /></button>
                       )}
+                      {hasPermission('staff_preview') && (
+                        <button onClick={() => handlePreviewStaff(emp)} style={{ flex: 1, background: 'rgba(167, 139, 250, 0.1)', border: '1px solid rgba(167, 139, 250, 0.2)', color: '#a78bfa', padding: '0.8rem', borderRadius: '10px' }}><Eye size={18} style={{ margin: 'auto' }} /></button>
+                      )}
                       {hasPermission('delete_employee') && (
                         <button onClick={() => { setSelectedEmpId(emp.id); setShowDeleteModal(true); }} style={{ flex: 1, background: 'rgba(248, 113, 113, 0.1)', border: '1px solid rgba(248, 113, 113, 0.2)', color: '#f87171', padding: '0.8rem', borderRadius: '10px' }}><Trash2 size={18} style={{ margin: 'auto' }} /></button>
                       )}
@@ -563,8 +611,6 @@ export default function StaffPage() {
                )
             })}
           </div>
-        </>
-      )}
 
       {/* --- MODALS --- */}
       

@@ -238,7 +238,8 @@ const PERMISSIONS_GROUPS = [
       { key: 'delete_employee', label: 'delete_employee', desc: 'Delete Staff Member' },
       { key: 'add_points', label: 'add_points', desc: 'Add Points' },
       { key: 'remove_points', label: 'remove_points', desc: 'Deduct Points' },
-      { key: 'manage_job_titles', label: 'manage_job_titles', desc: 'Manage Job Titles' }
+      { key: 'manage_job_titles', label: 'manage_job_titles', desc: 'Manage Job Titles' },
+      { key: 'staff_preview', label: 'staff_preview', desc: 'Staff Preview' }
     ]
   },
   {
@@ -1249,7 +1250,7 @@ export default function SettingsPage() {
                           {adminRoles
                             .map((role, idx) => ({ role, idx }))
                             .filter(({ role }) => systemTab === 'fixed_roles' ? role.is_fixed : !role.is_fixed)
-                            .map(({ role, idx }) => {
+                            .map(({ role, idx }, visibleIdx) => {
                             const isSelected = selectedRoleId === role.id;
                             return (
                               <div
@@ -1328,7 +1329,7 @@ export default function SettingsPage() {
                                   padding: '0.15rem 0.4rem',
                                   borderRadius: '5px'
                                 }}>
-                                  #{role.priority}
+                                  #{visibleIdx + 1}
                                 </span>
 
                                 <button

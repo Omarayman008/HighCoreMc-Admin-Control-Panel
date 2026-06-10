@@ -63,7 +63,7 @@ const CustomSelect = ({ options, value, onChange, placeholder }: any) => {
 export default function RanksPage() {
   const [ranks, setRanks] = useState<Rank[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -87,9 +87,7 @@ export default function RanksPage() {
   const colors = ['#FCD34D', '#A78BFA', '#22D3EE', '#FB923C', '#60A5FA', '#A855F7', '#34D399', '#F87171', '#94A3B8'];
 
   useEffect(() => {
-    const auth = localStorage.getItem('adminAuth');
-    const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
-    if (auth === 'HighCoreadmin_@@' || isAdminLocal) setIsAdmin(true);
+    setHasAccess(hasPermission('view_ranks'));
     fetchData();
   }, []);
 
@@ -201,21 +199,11 @@ export default function RanksPage() {
     }
   };
 
-  if (!isAdmin) {
-    return (
-      <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '2rem' }}>
-          <Award color="var(--primary)" size={32} /> Ranks System
-        </h1>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(17,24,53,0.8)', backdropFilter: 'blur(8px)', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '24px' }}>
-          <div style={{ textAlign: 'center', background: 'var(--glass-bg)', padding: '3rem', borderRadius: '24px', border: '1px solid var(--glass-border)' }}>
-            <Shield size={64} color="#facc15" style={{ margin: '0 auto 1rem' }} />
-            <h2 style={{ color: 'var(--foreground)', fontSize: '1.5rem', fontWeight: 800 }}>Restricted Access</h2>
-            <p style={{ color: 'var(--text-muted)' }}>This section is for the Ranks Manager only.</p>
-          </div>
-        </div>
-      </div>
-    );
+  if (hasAccess === null || isLoading) {
+    return <div style={{ color: 'var(--foreground)', textAlign: 'center', padding: '4rem' }}>Loading...</div>;
+  }
+  if (!hasAccess) {
+    return <div style={{ padding: '2rem', color: 'var(--foreground)' }}>You do not have permission to view this page.</div>;
   }
 
   return (
@@ -236,10 +224,7 @@ export default function RanksPage() {
         </button>
       </div>
 
-      {isLoading ? (
-        <div style={{ color: 'var(--foreground)', textAlign: 'center', padding: '4rem' }}>Loading ranks...</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <Reorder.Group axis="y" values={ranks} onReorder={handleReorder} style={{ listStyleType: 'none', display: 'flex', flexDirection: 'column', gap: '1rem' }} layoutScroll>
             {ranks.map((rank) => (
               <Reorder.Item 
@@ -284,7 +269,6 @@ export default function RanksPage() {
             ))}
           </Reorder.Group>
         </div>
-      )}
 
       {/* --- MODALS --- */}
       

@@ -42,6 +42,7 @@ export default function Dashboard() {
   const [totalPoints, setTotalPoints] = useState<number>(0);
   const [onlineStaff, setOnlineStaff] = useState<number>(0);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [ticketsToday, setTicketsToday] = useState<number>(0);
   const [totalTicketsAllTime, setTotalTicketsAllTime] = useState<number>(0);
   const [activities, setActivities] = useState<any[]>([]);
@@ -145,6 +146,8 @@ export default function Dashboard() {
 
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchData();
@@ -317,7 +320,16 @@ export default function Dashboard() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingBottom: '2rem', position: 'relative' }}>
-      {/* Header */}
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: 'var(--text-muted)' }}>
+          <div style={{ textAlign: 'center' }}>
+            <Activity size={40} color="var(--primary)" style={{ animation: 'pulse 2s infinite' }} />
+            <div style={{ marginTop: '1rem', fontWeight: 600 }}>Loading Dashboard Data...</div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Header */}
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--foreground)', letterSpacing: '-0.02em' }}>Control Panel</h1>
@@ -644,6 +656,8 @@ export default function Dashboard() {
 
         </div>
       </motion.div>
+      </>
+      )}
 
       {/* Staff Modal */}
       <AnimatePresence>
