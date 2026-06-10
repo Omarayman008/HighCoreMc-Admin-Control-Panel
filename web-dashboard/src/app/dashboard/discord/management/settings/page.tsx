@@ -1229,7 +1229,7 @@ export default function SettingsPage() {
                   {(systemTab === 'roles' || systemTab === 'fixed_roles') && (
                     <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '2rem', minHeight: '500px', flexWrap: 'wrap' }}>
 
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', height: '100%' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <h4 style={{ color: 'var(--foreground)', fontWeight: 700, fontSize: '1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                             <Users size={18} color="var(--primary)" /> {systemTab === 'fixed_roles' ? 'Fixed Roles' : 'Roles'} ({adminRoles.filter(r => systemTab === 'fixed_roles' ? r.is_fixed : !r.is_fixed).length})
@@ -1265,10 +1265,11 @@ export default function SettingsPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '0.75rem',
-                          maxHeight: '600px',
+                          flex: 1,
+                          minHeight: 0,
                           overflowY: 'auto',
                           paddingRight: '0.5rem',
-                          paddingBottom: '50px' // Provides scroll room for the absolute ColorPicker
+                          paddingBottom: '1rem' // Provides scroll room
                         }}>
                           {adminRoles
                             .map((role, idx) => ({ role, idx }))
@@ -1452,7 +1453,8 @@ export default function SettingsPage() {
                         padding: '1.5rem',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '1.2rem'
+                        gap: '1.2rem',
+                        height: '100%'
                       }}>
                         {selectedRoleId ? (
                           (() => {
@@ -1518,7 +1520,7 @@ export default function SettingsPage() {
                                   }} style={{ background: selectedRole.department_type === 'MC' ? 'rgba(239,68,68,0.15)' : 'transparent', color: selectedRole.department_type === 'MC' ? '#EF4444' : 'var(--text-muted)', padding: '0.4rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>MC Department</button>
                                 </div>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', overflowY: 'auto', maxHeight: '600px', paddingRight: '0.5rem', paddingBottom: '50px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: '0.5rem', paddingBottom: '1rem' }}>
                                   {PERMISSIONS_GROUPS.map((group, groupIdx) => {
                                     const groupKeys = group.permissions.map(p => p.key);
                                     const enabledCount = groupKeys.filter(k => roleKeys.includes(k)).length;
