@@ -568,7 +568,7 @@ export default function EventsTab() {
               initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }} 
               exit={{ opacity: 0, scale: 0.95 }} 
-              style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '550px', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}
+              style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '500px', padding: '2rem' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '1.5rem' }}>{editingEvent ? 'Edit Discord Event' : 'Create Discord Event'}</h2>
               <form onSubmit={handleCreateEvent} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -647,23 +647,25 @@ export default function EventsTab() {
                 {isPrivate && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(236,72,153,0.05)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(236,72,153,0.2)' }}>
                     <label style={{ display: 'block', color: '#ec4899', fontSize: '0.9rem', fontWeight: 600 }}>Assign Supervisors ({maxSupervisors})</label>
-                    {assignedStaff.map((staffId, idx) => (
-                      <div key={idx}>
-                        <CustomSelect 
-                          value={staffId}
-                          onChange={(val) => {
-                            const newArr = [...assignedStaff];
-                            newArr[idx] = val;
-                            setAssignedStaff(newArr);
-                          }}
-                          options={[
-                            { value: '', label: `Select Staff ${idx + 1}` },
-                            ...employees.map(e => ({ value: e.id.toString(), label: e.name }))
-                          ]}
-                          placeholder={`Select Staff ${idx + 1}`}
-                        />
-                      </div>
-                    ))}
+                    <div style={{ maxHeight: '140px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingRight: '0.5rem' }}>
+                      {assignedStaff.map((staffId, idx) => (
+                        <div key={idx}>
+                          <CustomSelect 
+                            value={staffId}
+                            onChange={(val) => {
+                              const newArr = [...assignedStaff];
+                              newArr[idx] = val;
+                              setAssignedStaff(newArr);
+                            }}
+                            options={[
+                              { value: '', label: `Select Staff ${idx + 1}` },
+                              ...employees.map(e => ({ value: e.id.toString(), label: e.name }))
+                            ]}
+                            placeholder={`Select Staff ${idx + 1}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 

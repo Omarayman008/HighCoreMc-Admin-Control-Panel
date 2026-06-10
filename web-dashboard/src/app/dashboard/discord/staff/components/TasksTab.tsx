@@ -270,8 +270,21 @@ export default function TasksTab() {
       {isLoading ? (
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>Loading tasks...</div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-          {tasks.length === 0 && <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', gridColumn: '1 / -1' }}>No active tasks available.</div>}
+        <>
+          {(() => {
+            const privateAssigned = tasks.filter(t => t.is_private && t.assigned_to === currentEmpId && !completions.some(c => c.task_id === t.id && c.emp_id === parseInt(currentEmpId)));
+            if (privateAssigned.length > 0) {
+              return (
+                <div style={{ marginBottom: '1.5rem', background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.3)', padding: '1rem', borderRadius: '12px', color: '#ec4899', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                  <div style={{ background: '#ec4899', width: '8px', height: '8px', borderRadius: '50%', boxShadow: '0 0 10px #ec4899' }}></div>
+                  تنبيه: لديك {privateAssigned.length} مهمة خاصة معينة لك بانتظار إنجازها!
+                </div>
+              );
+            }
+            return null;
+          })()}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            {tasks.length === 0 && <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', gridColumn: '1 / -1' }}>No active tasks available.</div>}
           
           {tasks.filter(t => !t.is_private || isAdmin || t.assigned_to === currentEmpId).map((task) => {
             const hasCompleted = completions.some(c => c.task_id === task.id && c.emp_id === parseInt(currentEmpId));
@@ -325,24 +338,31 @@ export default function TasksTab() {
                     <Clock size={14} /> {isExpired ? 'Expired' : `${remaining} days left`}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text-muted)' }}>
-                    <User size={14} /> {task.created_by || 'Admin'}
+                    <User size={14} /> {task.is_private ? `For: ${employees.find(e => e.id.toString() === task.assigned_to)?.name || 'Unknown'}` : `By: ${task.created_by || 'Admin'}`}
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button 
-                    onClick={() => handleCompleteTask(task)}
-                    disabled={hasCompleted || isExpired || !currentEmpId}
-                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: (hasCompleted || isExpired || !currentEmpId) ? 'rgba(255,255,255,0.05)' : '#5865F2', color: (hasCompleted || isExpired || !currentEmpId) ? 'var(--text-muted)' : '#fff', border: 'none', padding: '0.8rem', borderRadius: '10px', fontWeight: 600, cursor: (hasCompleted || isExpired || !currentEmpId) ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
-                  >
-                    <CheckCircle size={18} /> {hasCompleted ? 'Completed' : 'Complete Task'}
-                  </button>
+                  {(() => {
+                    const isAssignedPerson = task.is_private ? task.assigned_to === currentEmpId : true;
+                    const isDisabled = hasCompleted || isExpired || !currentEmpId || !isAssignedPerson;
+                    return (
+                      <button 
+                        onClick={() => handleCompleteTask(task)}
+                        disabled={isDisabled}
+                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: isDisabled ? 'rgba(255,255,255,0.05)' : '#5865F2', color: isDisabled ? 'var(--text-muted)' : '#fff', border: 'none', padding: '0.8rem', borderRadius: '10px', fontWeight: 600, cursor: isDisabled ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
+                      >
+                        <CheckCircle size={18} /> {hasCompleted ? 'Completed' : 'Complete Task'}
+                      </button>
+                    );
+                  })()}
                 </div>
 
               </motion.div>
             );
           })}
-        </div>
+          </div>
+        </>
       )}
 
       {/* Add / Edit Task Modal */}

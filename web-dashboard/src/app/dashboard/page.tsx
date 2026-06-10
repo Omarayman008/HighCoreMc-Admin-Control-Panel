@@ -555,8 +555,8 @@ export default function Dashboard() {
                 {chartType === 'bar' ? 'Area Chart' : 'Bar Chart'}
               </button>
             </div>
-            <div style={{ width: '100%', flex: 1, minHeight: '260px' }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div style={{ width: '100%', flex: 1, minHeight: '260px', minWidth: 0 }}>
+              <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
                 {chartType === 'bar' ? (
                   <BarChart data={leaderboard.length === 1 ? [{ name: '', points: 0 }, ...leaderboard] : leaderboard} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
