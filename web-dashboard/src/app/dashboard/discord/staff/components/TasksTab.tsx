@@ -301,7 +301,7 @@ export default function TasksTab() {
               return (
                 <div style={{ marginBottom: '1.5rem', background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.3)', padding: '1rem', borderRadius: '12px', color: '#ec4899', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                   <div style={{ background: '#ec4899', width: '8px', height: '8px', borderRadius: '50%', boxShadow: '0 0 10px #ec4899' }}></div>
-                  تنبيه: لديك {myPrivateTasks.length} مهمة خاصة معينة لك بانتظار إنجازها!
+                  Alert: You have {myPrivateTasks.length} private tasks assigned to you waiting to be completed!
                 </div>
               );
             }

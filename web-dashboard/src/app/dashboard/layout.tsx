@@ -196,8 +196,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             setConfirmConfig({
               isOpen: true,
               type: 'success',
-              title: 'تنبيه مهام جديدة',
-              message: `مرحباً ${emps[0].name}، نزل عليك ${pendingTasks} مهام خاصة بانتظار إنجازها! الرجاء مراجعتها في قسم المهام.`,
+              title: 'New Task Alert',
+              message: `Welcome ${emps[0].name}, you have ${pendingTasks} private tasks waiting to be completed! Please review them in the Tasks section.`,
               onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
             });
             sessionStorage.setItem('hasSeenTaskAlert', 'true');
