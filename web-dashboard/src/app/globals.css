@@ -469,7 +469,6 @@ body {
     overflow-y: auto !important;
   }
 }
-t h  
- t d  
-   w h i t e - s p a c e :   n o w r a p ;    
- 
+
+th, td { white-space: nowrap; }
+
