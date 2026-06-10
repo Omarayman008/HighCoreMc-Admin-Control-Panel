@@ -1342,26 +1342,6 @@ export default function SettingsPage() {
                                       width: '100%'
                                     }}
                                   />
-                                  <div style={{ marginTop: '0.2rem' }}>
-                                    <select
-                                      value={role.department_type || 'ALL'}
-                                      onClick={e => e.stopPropagation()}
-                                      onChange={e => updateRoleField(idx, 'department_type', e.target.value)}
-                                      style={{
-                                        background: 'rgba(0,0,0,0.2)',
-                                        border: '1px solid var(--glass-border)',
-                                        color: 'var(--text-muted)',
-                                        fontSize: '0.75rem',
-                                        padding: '0.2rem 0.5rem',
-                                        borderRadius: '4px',
-                                        outline: 'none',
-                                      }}
-                                    >
-                                      <option value="ALL">ALL (Both Departments)</option>
-                                      <option value="DC">DC Department</option>
-                                      <option value="MC">MC Department</option>
-                                    </select>
-                                  </div>
                                 </div>
 
                                 <span style={{
@@ -1519,6 +1499,40 @@ export default function SettingsPage() {
                                       Deselect All
                                     </button>
                                   </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.8rem' }}>
+                                  <button onClick={() => {
+                                      const idx = adminRoles.findIndex(r => r.id === selectedRole.id);
+                                      if (idx !== -1) updateRoleField(idx, 'department_type', 'ALL');
+                                  }} style={{ background: (!selectedRole.department_type || selectedRole.department_type === 'ALL') ? 'rgba(239,68,68,0.15)' : 'transparent', color: (!selectedRole.department_type || selectedRole.department_type === 'ALL') ? '#EF4444' : 'var(--text-muted)', padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>ALL (Both)</button>
+                                  
+                                  <button onClick={() => {
+                                      const idx = adminRoles.findIndex(r => r.id === selectedRole.id);
+                                      if (idx !== -1) updateRoleField(idx, 'department_type', 'DC');
+                                  }} style={{ background: selectedRole.department_type === 'DC' ? 'rgba(239,68,68,0.15)' : 'transparent', color: selectedRole.department_type === 'DC' ? '#EF4444' : 'var(--text-muted)', padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>DC Department</button>
+                                  
+                                  <button onClick={() => {
+                                      const idx = adminRoles.findIndex(r => r.id === selectedRole.id);
+                                      if (idx !== -1) updateRoleField(idx, 'department_type', 'MC');
+                                  }} style={{ background: selectedRole.department_type === 'MC' ? 'rgba(239,68,68,0.15)' : 'transparent', color: selectedRole.department_type === 'MC' ? '#EF4444' : 'var(--text-muted)', padding: '0.5rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>MC Department</button>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '0.8rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.8rem', flexWrap: 'wrap' }}>
+                                  <button onClick={() => {
+                                      const idx = adminRoles.findIndex(r => r.id === selectedRole.id);
+                                      if (idx !== -1) updateRoleField(idx, 'department_type', 'ALL');
+                                  }} style={{ background: (!selectedRole.department_type || selectedRole.department_type === 'ALL') ? 'rgba(239,68,68,0.15)' : 'transparent', color: (!selectedRole.department_type || selectedRole.department_type === 'ALL') ? '#EF4444' : 'var(--text-muted)', padding: '0.4rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>ALL (Both)</button>
+                                  
+                                  <button onClick={() => {
+                                      const idx = adminRoles.findIndex(r => r.id === selectedRole.id);
+                                      if (idx !== -1) updateRoleField(idx, 'department_type', 'DC');
+                                  }} style={{ background: selectedRole.department_type === 'DC' ? 'rgba(239,68,68,0.15)' : 'transparent', color: selectedRole.department_type === 'DC' ? '#EF4444' : 'var(--text-muted)', padding: '0.4rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>DC Department</button>
+                                  
+                                  <button onClick={() => {
+                                      const idx = adminRoles.findIndex(r => r.id === selectedRole.id);
+                                      if (idx !== -1) updateRoleField(idx, 'department_type', 'MC');
+                                  }} style={{ background: selectedRole.department_type === 'MC' ? 'rgba(239,68,68,0.15)' : 'transparent', color: selectedRole.department_type === 'MC' ? '#EF4444' : 'var(--text-muted)', padding: '0.4rem 1rem', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>MC Department</button>
                                 </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', overflowY: 'auto', maxHeight: '350px', paddingRight: '0.5rem' }}>
