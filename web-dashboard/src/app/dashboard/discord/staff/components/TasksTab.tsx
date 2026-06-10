@@ -22,6 +22,8 @@ export default function TasksTab() {
   const [desc, setDesc] = useState('');
   const [points, setPoints] = useState(10);
   const [daysLimit, setDaysLimit] = useState(7);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [assignedTo, setAssignedTo] = useState('');
   const [editingTask, setEditingTask] = useState<any | null>(null);
 
   // Simulated Logged In User Context
@@ -85,7 +87,9 @@ export default function TasksTab() {
       points,
       duration_days: daysLimit,
       section: 'dc',
-      created_by: loggedAdmin
+      created_by: loggedAdmin,
+      is_private: isPrivate,
+      assigned_to: isPrivate ? assignedTo : null
     };
 
     let error;
@@ -117,6 +121,8 @@ export default function TasksTab() {
     setDesc('');
     setPoints(10);
     setDaysLimit(7);
+    setIsPrivate(false);
+    setAssignedTo('');
     setEditingTask(null);
   };
 
@@ -126,6 +132,8 @@ export default function TasksTab() {
     setDesc(task.description);
     setPoints(task.points);
     setDaysLimit(task.duration_days);
+    setIsPrivate(task.is_private || false);
+    setAssignedTo(task.assigned_to || '');
     setShowAddModal(true);
   };
 
@@ -265,7 +273,7 @@ export default function TasksTab() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
           {tasks.length === 0 && <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', gridColumn: '1 / -1' }}>No active tasks available.</div>}
           
-          {tasks.map((task) => {
+          {tasks.filter(t => !t.is_private || isAdmin || t.assigned_to === currentEmpId).map((task) => {
             const hasCompleted = completions.some(c => c.task_id === task.id && c.emp_id === parseInt(currentEmpId));
             const remaining = getDaysRemaining(task.created_at, task.duration_days);
             const isExpired = remaining <= 0;
@@ -299,7 +307,9 @@ export default function TasksTab() {
                 {/* Content */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', paddingRight: '4rem' }}>
                   <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <CheckSquare size={18} color="#5865F2" /> {task.title}
+                    <CheckSquare size={18} color={task.is_private ? "#EC4899" : "#5865F2"} /> 
+                    {task.title}
+                    {task.is_private && <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: 'rgba(236,72,153,0.1)', color: '#ec4899', borderRadius: '10px', border: '1px solid rgba(236,72,153,0.2)' }}>Private</span>}
                   </h3>
                   <div style={{ background: 'rgba(88, 101, 242, 0.1)', color: '#5865F2', padding: '0.3rem 0.8rem', borderRadius: '20px', fontWeight: 700, fontSize: '0.9rem' }}>
                     +{task.points}
@@ -362,6 +372,39 @@ export default function TasksTab() {
                     <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Duration (Days)</label>
                     <input type="number" min="1" required value={daysLimit} onChange={e => setDaysLimit(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
                   </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Task Type</label>
+                    <CustomSelect
+                      value={isPrivate ? 'private' : 'public'}
+                      onChange={(val) => setIsPrivate(val === 'private')}
+                      options={[
+                        { value: 'public', label: 'Public (All Staff)' },
+                        { value: 'private', label: 'Private (Specific Staff)' }
+                      ]}
+                      placeholder="Select Type"
+                      activeColor="#5865F2"
+                      activeBg="rgba(88, 101, 242, 0.15)"
+                    />
+                  </div>
+                  {isPrivate && (
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Assign To</label>
+                      <CustomSelect
+                        value={assignedTo}
+                        onChange={setAssignedTo}
+                        options={[
+                          { value: '', label: 'Select Staff Member' },
+                          ...employees.map(e => ({ value: e.id.toString(), label: e.name }))
+                        ]}
+                        placeholder="Select Staff"
+                        activeColor="#5865F2"
+                        activeBg="rgba(88, 101, 242, 0.15)"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>

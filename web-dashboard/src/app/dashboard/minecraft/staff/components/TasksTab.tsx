@@ -11,6 +11,7 @@ import ConfirmModal from '@/components/ConfirmModal';
 // Component
 export default function TasksTab() {
   const [tasks, setTasks] = useState<any[]>([]);
+  const [completions, setCompletions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -20,7 +21,9 @@ export default function TasksTab() {
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
   const [points, setPoints] = useState(10);
-  const [daysLimit, setDaysLimit] = useState(3);
+  const [daysLimit, setDaysLimit] = useState(7);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [assignedTo, setAssignedTo] = useState('');
   const [editingTask, setEditingTask] = useState<any | null>(null);
 
   const [employees, setEmployees] = useState<any[]>([]);
@@ -41,9 +44,10 @@ export default function TasksTab() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [tasksRes, empsRes] = await Promise.all([
+      const [tasksRes, empsRes, compRes] = await Promise.all([
         supabase.from('mc_tasks').select('*, employees(name)').eq('status', 'active').order('created_at', { ascending: false }),
-        supabase.from('employees').select('id, name').order('name')
+        supabase.from('employees').select('id, name').order('name'),
+        supabase.from('mc_completions').select('*')
       ]);
 
       if (tasksRes.data) setTasks(tasksRes.data);
@@ -51,6 +55,7 @@ export default function TasksTab() {
         setEmployees(empsRes.data);
         if (empsRes.data.length > 0) setCurrentEmpId(empsRes.data[0].id.toString());
       }
+      if (compRes.data) setCompletions(compRes.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -79,7 +84,9 @@ export default function TasksTab() {
       description: desc,
       points,
       days_limit: daysLimit,
-      created_by: loggedAdmin
+      created_by: loggedAdmin,
+      is_private: isPrivate,
+      assigned_to: isPrivate ? assignedTo : null
     };
 
     let error;
@@ -110,7 +117,9 @@ export default function TasksTab() {
     setTitle('');
     setDesc('');
     setPoints(10);
-    setDaysLimit(3);
+    setDaysLimit(7);
+    setIsPrivate(false);
+    setAssignedTo('');
     setEditingTask(null);
   };
 
@@ -120,6 +129,8 @@ export default function TasksTab() {
     setDesc(task.description);
     setPoints(task.points);
     setDaysLimit(task.days_limit);
+    setIsPrivate(task.is_private || false);
+    setAssignedTo(task.assigned_to || '');
     setShowAddModal(true);
   };
 
@@ -137,11 +148,10 @@ export default function TasksTab() {
       onConfirm: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
 
-        const { error } = await supabase.from('mc_tasks').update({
-          status: 'completed',
-          completed_by: parseInt(currentEmpId),
-          completed_at: new Date().toISOString()
-        }).eq('id', task.id);
+        const { error } = await supabase.from('mc_completions').insert({
+          task_id: task.id,
+          emp_id: parseInt(currentEmpId)
+        });
 
         if (!error) {
           const { data: empData } = await supabase.from('employees').select('points, mc_points').eq('id', currentEmpId).maybeSingle();
@@ -255,7 +265,8 @@ export default function TasksTab() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
           {tasks.length === 0 && <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', gridColumn: '1 / -1' }}>No active tasks available.</div>}
           
-          {tasks.map((task) => {
+          {tasks.filter(t => !t.is_private || isAdmin || t.assigned_to === currentEmpId).map((task) => {
+            const hasCompleted = completions.some(c => c.task_id === task.id && c.emp_id === parseInt(currentEmpId));
             const remaining = getDaysRemaining(task.created_at, task.days_limit);
             const isExpired = remaining <= 0;
 
@@ -288,7 +299,9 @@ export default function TasksTab() {
                 {/* Content */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', paddingRight: '4rem' }}>
                   <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <CheckSquare size={18} color="#55bb55" /> {task.title}
+                    <CheckSquare size={18} color={task.is_private ? "#EC4899" : "#55bb55"} /> 
+                    {task.title}
+                    {task.is_private && <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: 'rgba(236,72,153,0.1)', color: '#ec4899', borderRadius: '10px', border: '1px solid rgba(236,72,153,0.2)' }}>Private</span>}
                   </h3>
                   <div style={{ background: 'rgba(85, 187, 85, 0.1)', color: '#55bb55', padding: '0.3rem 0.8rem', borderRadius: '20px', fontWeight: 700, fontSize: '0.9rem' }}>
                     +{task.points}
@@ -351,6 +364,39 @@ export default function TasksTab() {
                     <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Duration (Days)</label>
                     <input type="number" min="1" required value={daysLimit} onChange={e => setDaysLimit(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
                   </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Task Type</label>
+                    <CustomSelect
+                      value={isPrivate ? 'private' : 'public'}
+                      onChange={(val) => setIsPrivate(val === 'private')}
+                      options={[
+                        { value: 'public', label: 'Public (All Staff)' },
+                        { value: 'private', label: 'Private (Specific Staff)' }
+                      ]}
+                      placeholder="Select Type"
+                      activeColor="#55bb55"
+                      activeBg="rgba(85, 187, 85, 0.15)"
+                    />
+                  </div>
+                  {isPrivate && (
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Assign To</label>
+                      <CustomSelect
+                        value={assignedTo}
+                        onChange={setAssignedTo}
+                        options={[
+                          { value: '', label: 'Select Staff Member' },
+                          ...employees.map(e => ({ value: e.id.toString(), label: e.name }))
+                        ]}
+                        placeholder="Select Staff"
+                        activeColor="#55bb55"
+                        activeBg="rgba(85, 187, 85, 0.15)"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>

@@ -28,7 +28,17 @@ export default function EventsTab() {
   const [eventDate, setEventDate] = useState('');
   const [maxSupervisors, setMaxSupervisors] = useState(1);
   const [points, setPoints] = useState(15);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [assignedStaff, setAssignedStaff] = useState<string[]>(['']);
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
+
+  useEffect(() => {
+    setAssignedStaff(prev => {
+      const newArr = [...prev];
+      while (newArr.length < maxSupervisors) newArr.push('');
+      return newArr.slice(0, maxSupervisors);
+    });
+  }, [maxSupervisors]);
 
   // Confirm Modal Config
   const [confirmConfig, setConfirmConfig] = useState<{isOpen: boolean, type: 'danger'|'success'|'info', title: string, message: string, onConfirm: () => void}>({
@@ -87,7 +97,7 @@ export default function EventsTab() {
     const loggedAdmin = localStorage.getItem('adminUsername') || 'Guest';
 
     const eventPayload = {
-      title,
+      title: isPrivate && !title.startsWith('[Private]') ? `[Private] ${title}` : title,
       description: desc,
       event_type: type,
       event_date: eventDate,
@@ -98,15 +108,38 @@ export default function EventsTab() {
     };
 
     let error;
+    let createdEventId = null;
+    
     if (editingEvent) {
       const { error: err } = await supabase.from('events').update(eventPayload).eq('id', editingEvent.id);
       error = err;
+      createdEventId = editingEvent.id;
     } else {
-      const { error: err } = await supabase.from('events').insert(eventPayload);
+      const { data, error: err } = await supabase.from('events').insert(eventPayload).select().single();
       error = err;
+      if (data) createdEventId = data.id;
     }
 
     if (!error) {
+      if (isPrivate && !editingEvent && createdEventId) {
+        const supervisorInserts = assignedStaff.filter(id => id).map(empIdStr => {
+          const emp = employees.find(e => e.id.toString() === empIdStr);
+          return {
+            event_id: createdEventId,
+            emp_id: parseInt(empIdStr),
+            emp_name: emp?.name || 'Unknown',
+            claimed_at: new Date().toISOString(),
+            attendance: 'voice',
+            points_awarded: points,
+            review_status: 'pending',
+            report_submitted: false
+          };
+        });
+        if (supervisorInserts.length > 0) {
+          await supabase.from('event_supervisors').insert(supervisorInserts);
+        }
+      }
+
       setShowAddModal(false);
       fetchData();
       resetForm();
@@ -128,6 +161,8 @@ export default function EventsTab() {
     setEventDate('');
     setMaxSupervisors(1);
     setPoints(15);
+    setIsPrivate(false);
+    setAssignedStaff(['']);
     setEditingEvent(null);
   };
 
@@ -141,6 +176,7 @@ export default function EventsTab() {
     if (ev.event_date) {
       setEventDate(new Date(ev.event_date).toISOString());
     }
+    setIsPrivate(ev.title.startsWith('[Private]'));
     setShowAddModal(true);
   };
 
@@ -574,14 +610,52 @@ export default function EventsTab() {
 
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Max Supervisors</label>
-                    <input type="number" min="1" max="10" value={maxSupervisors} onChange={e => setMaxSupervisors(parseInt(e.target.value) || 1)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
+                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Max Supervisors (Max 5)</label>
+                    <input type="number" min="1" max="5" value={maxSupervisors} onChange={e => setMaxSupervisors(Math.min(5, Math.max(1, parseInt(e.target.value) || 1)))} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
                   </div>
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Points Awarded</label>
                     <input type="number" min="1" value={points} onChange={e => setPoints(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
                   </div>
                 </div>
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Event Visibility</label>
+                    <CustomSelect 
+                      value={isPrivate ? 'private' : 'public'}
+                      onChange={(val) => setIsPrivate(val === 'private')}
+                      options={[
+                        { value: 'public', label: 'Public (Anyone can claim)' },
+                        { value: 'private', label: 'Private (Assigned to specific staff)' }
+                      ]}
+                      placeholder="Select Visibility"
+                    />
+                  </div>
+                </div>
+
+                {isPrivate && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(236,72,153,0.05)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(236,72,153,0.2)' }}>
+                    <label style={{ display: 'block', color: '#ec4899', fontSize: '0.9rem', fontWeight: 600 }}>Assign Supervisors ({maxSupervisors})</label>
+                    {assignedStaff.map((staffId, idx) => (
+                      <div key={idx}>
+                        <CustomSelect 
+                          value={staffId}
+                          onChange={(val) => {
+                            const newArr = [...assignedStaff];
+                            newArr[idx] = val;
+                            setAssignedStaff(newArr);
+                          }}
+                          options={[
+                            { value: '', label: `Select Staff ${idx + 1}` },
+                            ...employees.map(e => ({ value: e.id.toString(), label: e.name }))
+                          ]}
+                          placeholder={`Select Staff ${idx + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                   <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.8rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>

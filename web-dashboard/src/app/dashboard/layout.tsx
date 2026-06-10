@@ -1,10 +1,12 @@
 'use client';
 
-import { Home, Users, Settings, LogOut, BarChart2, Plus, UserPlus, Moon, Sun, Shield, Award, ChevronDown, Activity, Pickaxe, MessageSquare, Ticket } from 'lucide-react';
+import { Home, Users, Settings, LogOut, BarChart2, Plus, UserPlus, Moon, Sun, Shield, Award, ChevronDown, Activity, Pickaxe, MessageSquare, Ticket, X as XIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
+import SettingsPage from './discord/management/settings/page';
 
 // Custom Mouse Glow Component
 function CursorGlow() {
@@ -59,12 +61,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarLogo, setSidebarLogo] = useState<any>(null);
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [showSettingsOverlay, setShowSettingsOverlay] = useState(false);
 
   // Helper to check if user has a permission
-  const hasPerm = (perm: string) => {
+  const hasPerm = useCallback((perm: string) => {
     if (userPermissions.includes('*')) return true;
     return userPermissions.includes(perm);
-  };
+  }, [userPermissions]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key.toLowerCase() === 'x') {
+        e.preventDefault();
+        if (hasPerm('view_settings')) {
+          setShowSettingsOverlay(prev => !prev);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [hasPerm]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -664,6 +680,50 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+
+      {/* Settings Overlay (Alt + X) */}
+      <AnimatePresence>
+        {showSettingsOverlay && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: 'fixed',
+              top: '2%',
+              left: '2%',
+              width: '96%',
+              height: '96%',
+              background: 'var(--bg)',
+              zIndex: 99999,
+              borderRadius: '24px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+              border: '1px solid var(--glass-border)',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}
+          >
+            <div style={{ padding: '1rem 2rem', background: 'var(--glass-bg)', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--foreground)' }}>
+                <Settings size={24} color="#EC4899" />
+                Quick Settings Overlay
+              </h2>
+              <button
+                onClick={() => setShowSettingsOverlay(false)}
+                style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', padding: '0.5rem', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <XIcon size={20} />
+              </button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }}>
+              {/* Render the full settings page */}
+              <SettingsPage />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
