@@ -706,7 +706,8 @@ export default function SettingsPage() {
         discord_roles: Array.isArray(r.discord_roles) ? r.discord_roles : [],
         priority: index + 1,
         permissions: rolePermissions[r.id] || [],
-        is_fixed: r.is_fixed || false
+        is_fixed: r.is_fixed || false,
+        department_type: r.department_type || 'ALL'
       }));
       const { error: rolesErr } = await supabase.from('roles').upsert(rolesToUpsert);
       if (rolesErr) throw rolesErr;
@@ -1341,6 +1342,26 @@ export default function SettingsPage() {
                                       width: '100%'
                                     }}
                                   />
+                                  <div style={{ marginTop: '0.2rem' }}>
+                                    <select
+                                      value={role.department_type || 'ALL'}
+                                      onClick={e => e.stopPropagation()}
+                                      onChange={e => updateRoleField(idx, 'department_type', e.target.value)}
+                                      style={{
+                                        background: 'rgba(0,0,0,0.2)',
+                                        border: '1px solid var(--glass-border)',
+                                        color: 'var(--text-muted)',
+                                        fontSize: '0.75rem',
+                                        padding: '0.2rem 0.5rem',
+                                        borderRadius: '4px',
+                                        outline: 'none',
+                                      }}
+                                    >
+                                      <option value="ALL">ALL (Both Departments)</option>
+                                      <option value="DC">DC Department</option>
+                                      <option value="MC">MC Department</option>
+                                    </select>
+                                  </div>
                                 </div>
 
                                 <span style={{
