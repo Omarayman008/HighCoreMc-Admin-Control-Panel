@@ -3,7 +3,7 @@
 // Header
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckSquare, Plus, Clock, User, CheckCircle, Trash2, Edit2 } from 'lucide-react';
+import { CheckSquare, Plus, Clock, User, CheckCircle, Trash2, Edit2, Check } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logAction } from '@/lib/logger';
 import CustomSelect from '@/components/CustomSelect';
