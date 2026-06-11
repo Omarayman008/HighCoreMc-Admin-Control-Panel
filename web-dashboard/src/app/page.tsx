@@ -354,7 +354,7 @@ export default function Login() {
         >
           {/* Header */}
           <div>
-            <h1 className="title">{settings?.login?.title || 'Opex System'}</h1>
+            <h1 className="title">{settings?.login?.title || 'HighCoreMc'}</h1>
             <p className="subtitle">{settings?.login?.welcome || 'Welcome Back'}</p>
           </div>
 

@@ -1,5 +1,6 @@
 'use client';
 
+import * as LucideIcons from 'lucide-react';
 import { Home, Users, Settings, LogOut, BarChart2, Plus, UserPlus, Moon, Sun, Shield, Award, ChevronDown, Activity, Pickaxe, MessageSquare, Ticket, X as XIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -8,6 +9,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import SettingsPage from './discord/management/settings/page';
 import ConfirmModal from '@/components/ConfirmModal';
+
+const DynamicIcon = ({ name, size = 20, ...props }: { name: string, size?: number, [key: string]: any }) => {
+  const IconComponent = (LucideIcons as any)[name];
+  if (!IconComponent) return <Home size={size} {...props} />;
+  return <IconComponent size={size} {...props} />;
+};
 
 // Custom Mouse Glow Component
 function CursorGlow() {
@@ -312,7 +319,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           action: 'Action'
         },
         login: {
-          title: 'Opex System',
+          title: 'HighCoreMc',
           welcome: 'Welcome Back',
           iconAdmin: 'ShieldAlert',
           textAdmin: 'Staff Manager',
@@ -336,7 +343,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const result = Array.isArray(data) ? [...data] : { ...data };
         
         if (typeof result.sysname === 'string' && /[\u0600-\u06FF]/.test(result.sysname)) {
-          result.sysname = 'OPEX MC - DASHBOARD';
+          result.sysname = 'HighCoreMc - Dashboard';
         }
 
         for (const groupKey in data) {
@@ -406,9 +413,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   const navItems = [
-    { name: settings?.tabs?.dashboard || 'Dashboard', icon: <Home size={20} />, path: '/dashboard', perm: 'view_dashboard' },
-    { name: settings?.tabs?.employees || 'Staff', icon: <Users size={20} />, path: '/dashboard/staff', perm: 'view_employees' },
-    { name: settings?.tabs?.ranks || 'Ranks', icon: <Award size={20} />, path: '/dashboard/ranks', perm: 'view_ranks' },
+    { name: settings?.tabs?.dashboard || 'Dashboard', icon: <DynamicIcon name={settings?.icons?.dashboard || 'Home'} size={20} />, path: '/dashboard', perm: 'view_dashboard' },
+    { name: settings?.tabs?.employees || 'Staff', icon: <DynamicIcon name={settings?.icons?.staff || 'Users'} size={20} />, path: '/dashboard/staff', perm: 'view_employees' },
+    { name: settings?.tabs?.ranks || 'Ranks', icon: <DynamicIcon name={settings?.icons?.ranks || 'Award'} size={20} />, path: '/dashboard/ranks', perm: 'view_ranks' },
   ].filter(item => hasPerm(item.perm));
 
   if (isAuthorized === null) {
@@ -521,7 +528,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onMouseLeave={(e) => { if (!pathname.includes('/minecraft')) e.currentTarget.style.background = 'transparent' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <Pickaxe size={20} />
+                <DynamicIcon name={settings?.icons?.minecraft || 'Pickaxe'} size={20} />
                 {settings?.tabs?.minecraft || 'Minecraft'}
               </div>
               <ChevronDown size={16} style={{ transform: isMcOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
@@ -533,8 +540,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               height: isMcOpen ? 'auto' : '0', overflow: 'hidden', opacity: isMcOpen ? 1 : 0, transition: 'all 0.3s ease-in-out'
             }}>
               {[
-                { name: settings?.tabs?.mcStatus || 'Server Status', path: '/dashboard/minecraft/status', icon: <Activity size={16} />, perm: 'view_mc_status' },
-                { name: settings?.tabs?.mcStaff || 'MC Staff', path: '/dashboard/minecraft/staff', icon: <Users size={16} />, perm: 'view_mc_staff' }
+                { name: settings?.tabs?.mcStatus || 'Server Status', path: '/dashboard/minecraft/status', icon: <DynamicIcon name={settings?.icons?.mcStatus || 'Activity'} size={16} />, perm: 'view_mc_status' },
+                { name: settings?.tabs?.mcStaff || 'MC Staff', path: '/dashboard/minecraft/staff', icon: <DynamicIcon name={settings?.icons?.mcStaff || 'Users'} size={16} />, perm: 'view_mc_staff' }
               ].filter(sub => hasPerm(sub.perm)).map(sub => {
                 const isSubActive = pathname === sub.path;
                 return (
@@ -580,9 +587,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onMouseLeave={(e) => { if (!(pathname.includes('/discord') && !pathname.includes('/discord/management'))) e.currentTarget.style.background = 'transparent' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="currentColor">
-                  <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z" />
-                </svg>
+                <DynamicIcon name={settings?.icons?.discord || 'Discord'} size={20} />
                 {settings?.tabs?.discord || 'Discord'}
               </div>
               <ChevronDown size={16} style={{ transform: isDcOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
@@ -594,10 +599,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               height: isDcOpen ? 'auto' : '0', overflow: 'hidden', opacity: isDcOpen ? 1 : 0, transition: 'all 0.3s ease-in-out'
             }}>
               {[
-                { name: settings?.tabs?.dcStatus || 'Server Status', path: '/dashboard/discord/status', icon: <Activity size={16} />, perm: 'view_dc_status' },
-                { name: settings?.tabs?.dcStaff || 'DC Staff', path: '/dashboard/discord/staff', icon: <Users size={16} />, perm: 'view_dc_staff' },
-                { name: settings?.tabs?.forums || 'Forums', path: '/dashboard/discord/forums', icon: <MessageSquare size={16} />, perm: 'view_forums' },
-                { name: settings?.tickets?.tabName || 'Tickets', path: '/dashboard/discord/tickets', icon: <Ticket size={16} />, perm: 'view_tickets' }
+                { name: settings?.tabs?.dcStatus || 'Server Status', path: '/dashboard/discord/status', icon: <DynamicIcon name={settings?.icons?.dcStatus || 'Activity'} size={16} />, perm: 'view_dc_status' },
+                { name: settings?.tabs?.dcStaff || 'DC Staff', path: '/dashboard/discord/staff', icon: <DynamicIcon name={settings?.icons?.dcStaff || 'Users'} size={16} />, perm: 'view_dc_staff' },
+                { name: settings?.tabs?.forums || 'Forums', path: '/dashboard/discord/forums', icon: <DynamicIcon name={settings?.icons?.forums || 'MessageSquare'} size={16} />, perm: 'view_forums' },
+                { name: settings?.tickets?.tabName || 'Tickets', path: '/dashboard/discord/tickets', icon: <DynamicIcon name={settings?.icons?.tickets || 'Ticket'} size={16} />, perm: 'view_tickets' }
               ].filter(sub => hasPerm(sub.perm)).map(sub => {
                 const isSubActive = pathname === sub.path;
                 return (
@@ -643,7 +648,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 onMouseLeave={(e) => { if (!pathname.includes('/management')) e.currentTarget.style.background = 'transparent' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <Shield size={20} />
+                  <DynamicIcon name={settings?.icons?.management || 'Shield'} size={20} />
                   Management
                 </div>
                 <ChevronDown size={16} style={{ transform: isManagementOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
@@ -660,8 +665,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 transition: 'all 0.3s ease-in-out'
               }}>
                 {[
-                  { name: 'Settings', path: '/dashboard/discord/management/settings', icon: <Settings size={16} />, perm: 'view_settings' },
-                  { name: 'Logs', path: '/dashboard/discord/management/logs', icon: <Activity size={16} />, perm: 'view_logs' }
+                  { name: 'Settings', path: '/dashboard/discord/management/settings', icon: <DynamicIcon name={settings?.icons?.settings || 'Settings'} size={16} />, perm: 'view_settings' },
+                  { name: 'Logs', path: '/dashboard/discord/management/logs', icon: <DynamicIcon name={settings?.icons?.logs || 'Activity'} size={16} />, perm: 'view_logs' }
                 ].filter(sub => hasPerm(sub.perm)).map(sub => {
                   const isSubActive = pathname === sub.path;
                   return (

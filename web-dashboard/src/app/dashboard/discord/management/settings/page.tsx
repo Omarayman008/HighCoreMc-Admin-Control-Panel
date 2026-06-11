@@ -39,7 +39,23 @@ import ConfirmModal from '@/components/ConfirmModal';
 
 // Defaults
 const DEFAULT_APP_SETTINGS = {
-  sysname: 'OPEX MC - DASHBOARD',
+  sysname: 'HighCoreMc - Dashboard',
+  icons: {
+    dashboard: 'Home',
+    staff: 'Users',
+    ranks: 'Award',
+    minecraft: 'Pickaxe',
+    mcStatus: 'Activity',
+    mcStaff: 'Users',
+    discord: 'Discord',
+    dcStatus: 'Activity',
+    dcStaff: 'Users',
+    forums: 'MessageSquare',
+    tickets: 'Ticket',
+    management: 'Shield',
+    settings: 'Settings',
+    logs: 'Activity'
+  },
   tabs: {
     dashboard: 'Dashboard',
     employees: 'Staff',
@@ -92,7 +108,7 @@ const DEFAULT_APP_SETTINGS = {
     action: 'Action'
   },
   login: {
-    title: 'Opex System',
+    title: 'HighCoreMc',
     welcome: 'Welcome Back',
     iconAdmin: 'ShieldAlert',
     textAdmin: 'Staff Manager',
@@ -407,6 +423,73 @@ export default function SettingsPage() {
   };
 
   // Initial Load
+  const [logCategories, setLogCategories] = useState<string[]>([]);
+  const [logActionTypes, setLogActionTypes] = useState<string[]>([]);
+  const [manualCleanCategory, setManualCleanCategory] = useState('All');
+  const [manualCleanAction, setManualCleanAction] = useState('All');
+
+  // Load log filters when tab changes
+  useEffect(() => {
+    if (systemTab === 'logs') {
+      const fetchLogFilters = async () => {
+        try {
+          const { data } = await supabase.from('activity_log').select('category, action_type');
+          if (data) {
+            const categories = Array.from(new Set(data.map(d => d.category).filter(Boolean)));
+            const actions = Array.from(new Set(data.map(d => d.action_type).filter(Boolean)));
+            setLogCategories(categories as string[]);
+            setLogActionTypes(actions as string[]);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      fetchLogFilters();
+    }
+  }, [systemTab]);
+
+  const handleManualLogsCleanup = async () => {
+    showConfirm(
+      'Manual Logs Cleanup',
+      `Are you sure you want to delete logs where Category is "${manualCleanCategory}" and Action is "${manualCleanAction}"? This cannot be undone.`,
+      'danger',
+      async () => {
+        try {
+          let query = supabase.from('activity_log').delete();
+          // We need a dummy match to start the chain if we have filters
+          if (manualCleanCategory !== 'All') {
+            query = query.eq('category', manualCleanCategory);
+          }
+          if (manualCleanAction !== 'All') {
+            query = query.eq('action_type', manualCleanAction);
+          }
+          
+          if (manualCleanCategory === 'All' && manualCleanAction === 'All') {
+             // If both are All, maybe they want to delete everything? Or just prevent it.
+             // We will delete all.
+             query = query.neq('id', 0); // Hack to delete all
+          }
+
+          const { error } = await query;
+          if (error) throw error;
+          
+          await supabase.from('activity_log').insert({
+            action_type: 'Manual Logs Cleanup',
+            category: 'Maintenance',
+            details: `Manually deleted logs. Category: ${manualCleanCategory}, Action: ${manualCleanAction}`,
+            user_name: localStorage.getItem('adminUsername') || 'System'
+          });
+
+          showAlert('Success', 'Logs deleted successfully.', 'success');
+        } catch (err: any) {
+          showAlert('Error', 'Failed to delete logs: ' + err.message, 'danger');
+        }
+      },
+      'Purge Logs',
+      'Cancel'
+    );
+  };
+
   useEffect(() => {
     // Initial load
     fetchData();
@@ -1058,16 +1141,32 @@ export default function SettingsPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
                         <div>
-                          <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Players Card Icon Name</label>
-                          <input type="text" className="input-field" value={appSettings.login.iconStaff} onChange={e => updateAppField(['login', 'iconStaff'], e.target.value)} />
+                          <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Dashboard Icon</label>
+                          <input type="text" className="input-field" value={appSettings.icons?.dashboard || 'Home'} onChange={e => updateAppField(['icons', 'dashboard'], e.target.value)} />
                         </div>
                         <div>
-                          <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Points Card Icon Name</label>
-                          <input type="text" className="input-field" value={appSettings.login.iconAdmin} onChange={e => updateAppField(['login', 'iconAdmin'], e.target.value)} />
+                          <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Staff Icon</label>
+                          <input type="text" className="input-field" value={appSettings.icons?.staff || 'Users'} onChange={e => updateAppField(['icons', 'staff'], e.target.value)} />
                         </div>
                         <div>
-                          <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Active Employees Card Icon Name</label>
-                          <input type="text" className="input-field" value={appSettings.login.iconMod} onChange={e => updateAppField(['login', 'iconMod'], e.target.value)} />
+                          <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Ranks Icon</label>
+                          <input type="text" className="input-field" value={appSettings.icons?.ranks || 'Award'} onChange={e => updateAppField(['icons', 'ranks'], e.target.value)} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Minecraft Icon</label>
+                          <input type="text" className="input-field" value={appSettings.icons?.minecraft || 'Pickaxe'} onChange={e => updateAppField(['icons', 'minecraft'], e.target.value)} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Discord Icon</label>
+                          <input type="text" className="input-field" value={appSettings.icons?.discord || 'Discord'} onChange={e => updateAppField(['icons', 'discord'], e.target.value)} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Forums Icon</label>
+                          <input type="text" className="input-field" value={appSettings.icons?.forums || 'MessageSquare'} onChange={e => updateAppField(['icons', 'forums'], e.target.value)} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Tickets Icon</label>
+                          <input type="text" className="input-field" value={appSettings.icons?.tickets || 'Ticket'} onChange={e => updateAppField(['icons', 'tickets'], e.target.value)} />
                         </div>
                       </div>
                     </div>
@@ -1092,19 +1191,31 @@ export default function SettingsPage() {
                         </div>
 
                         <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.2rem' }}>
-                          <h4 style={{ color: 'var(--foreground)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.8rem' }}>Login Roles UI Labeling</h4>
+                          <h4 style={{ color: 'var(--foreground)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.8rem' }}>Login Roles UI</h4>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
                             <div>
                               <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Staff Manager Label</label>
                               <input type="text" className="input-field" value={appSettings.login.textAdmin} onChange={e => updateAppField(['login', 'textAdmin'], e.target.value)} />
                             </div>
                             <div>
+                              <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Staff Manager Icon Name</label>
+                              <input type="text" className="input-field" value={appSettings.login.iconAdmin} onChange={e => updateAppField(['login', 'iconAdmin'], e.target.value)} />
+                            </div>
+                            <div>
                               <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Moderator Label</label>
                               <input type="text" className="input-field" value={appSettings.login.textMod} onChange={e => updateAppField(['login', 'textMod'], e.target.value)} />
                             </div>
                             <div>
+                              <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Moderator Icon Name</label>
+                              <input type="text" className="input-field" value={appSettings.login.iconMod} onChange={e => updateAppField(['login', 'iconMod'], e.target.value)} />
+                            </div>
+                            <div>
                               <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Staff Label</label>
                               <input type="text" className="input-field" value={appSettings.login.textStaff} onChange={e => updateAppField(['login', 'textStaff'], e.target.value)} />
+                            </div>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Staff Icon Name</label>
+                              <input type="text" className="input-field" value={appSettings.login.iconStaff} onChange={e => updateAppField(['login', 'iconStaff'], e.target.value)} />
                             </div>
                           </div>
                         </div>
@@ -1644,6 +1755,52 @@ export default function SettingsPage() {
                               Log {actKey} activities
                             </label>
                           ))}
+                        </div>
+                      </div>
+
+                      <div style={{ gridColumn: '1 / -1', marginTop: '1rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
+                        <h4 style={{ color: 'var(--foreground)', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <Trash2 size={18} color="#ef4444" /> Manual Logs Cleanup
+                        </h4>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>Delete specific logs based on category and section (action type) instantly. This is synchronized with the actual logs.</p>
+                        
+                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                          <div style={{ flex: 1, minWidth: '200px' }}>
+                            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>Category</label>
+                            <select 
+                              className="input-field" 
+                              style={{ background: 'rgba(0,0,0,0.2)', width: '100%', padding: '0.6rem 1rem' }}
+                              value={manualCleanCategory}
+                              onChange={e => setManualCleanCategory(e.target.value)}
+                            >
+                              <option value="All">All Categories</option>
+                              {logCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                          </div>
+                          
+                          <div style={{ flex: 1, minWidth: '200px' }}>
+                            <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>Action Type (Section)</label>
+                            <select 
+                              className="input-field" 
+                              style={{ background: 'rgba(0,0,0,0.2)', width: '100%', padding: '0.6rem 1rem' }}
+                              value={manualCleanAction}
+                              onChange={e => setManualCleanAction(e.target.value)}
+                            >
+                              <option value="All">All Action Types</option>
+                              {logActionTypes.map(a => <option key={a} value={a}>{a}</option>)}
+                            </select>
+                          </div>
+
+                          <button 
+                            onClick={handleManualLogsCleanup}
+                            style={{ 
+                              display: 'flex', alignItems: 'center', gap: '0.5rem', 
+                              background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid #ef4444', 
+                              padding: '0.6rem 1.5rem', borderRadius: '12px', cursor: 'pointer', fontWeight: 600, height: '42px'
+                            }}
+                          >
+                            <Trash2 size={18} /> Purge Now
+                          </button>
                         </div>
                       </div>
                     </div>
