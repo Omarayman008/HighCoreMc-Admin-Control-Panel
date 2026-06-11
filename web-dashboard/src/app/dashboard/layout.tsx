@@ -791,8 +791,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
               style={{
-                width: '100%',
-                height: '100%',
+                width: '80%',
+                height: '85%',
                 background: '#0f0f13',
                 borderRadius: '24px',
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
