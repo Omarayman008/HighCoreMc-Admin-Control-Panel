@@ -1767,28 +1767,26 @@ export default function SettingsPage() {
                         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                           <div style={{ flex: 1, minWidth: '200px' }}>
                             <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>Category</label>
-                            <select 
-                              className="input-field" 
-                              style={{ background: 'rgba(0,0,0,0.2)', width: '100%', padding: '0.6rem 1rem' }}
+                            <CustomSelect
                               value={manualCleanCategory}
-                              onChange={e => setManualCleanCategory(e.target.value)}
-                            >
-                              <option value="All">All Categories</option>
-                              {logCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
+                              onChange={setManualCleanCategory}
+                              options={[
+                                { value: 'All', label: 'All Categories' },
+                                ...logCategories.map(c => ({ value: c, label: c }))
+                              ]}
+                            />
                           </div>
                           
                           <div style={{ flex: 1, minWidth: '200px' }}>
                             <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>Action Type (Section)</label>
-                            <select 
-                              className="input-field" 
-                              style={{ background: 'rgba(0,0,0,0.2)', width: '100%', padding: '0.6rem 1rem' }}
+                            <CustomSelect
                               value={manualCleanAction}
-                              onChange={e => setManualCleanAction(e.target.value)}
-                            >
-                              <option value="All">All Action Types</option>
-                              {logActionTypes.map(a => <option key={a} value={a}>{a}</option>)}
-                            </select>
+                              onChange={setManualCleanAction}
+                              options={[
+                                { value: 'All', label: 'All Action Types' },
+                                ...logActionTypes.map(a => ({ value: a, label: a }))
+                              ]}
+                            />
                           </div>
 
                           <button 
