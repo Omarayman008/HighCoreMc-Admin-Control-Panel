@@ -540,6 +540,15 @@ export default function SettingsPage() {
             }
           }
         });
+        
+        // Auto-patch old OPEX branding from database
+        if (mergedSettings.sysname === 'OPEX MC - DASHBOARD') {
+          mergedSettings.sysname = 'HighCoreMc - Dashboard';
+        }
+        if (mergedSettings.login && mergedSettings.login.title === 'Opex System') {
+          mergedSettings.login.title = 'HighCoreMc';
+        }
+
         setAppSettings(mergedSettings);
       }
 

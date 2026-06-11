@@ -36,6 +36,13 @@ export default function Login() {
         const { data } = await supabase.from('settings').select('value').eq('key', 'app_settings').maybeSingle();
         if (data && data.value) {
           const parsed = JSON.parse(data.value);
+          // Auto-patch old OPEX branding from database
+          if (parsed.sysname === 'OPEX MC - DASHBOARD') {
+            parsed.sysname = 'HighCoreMc - Dashboard';
+          }
+          if (parsed.login && parsed.login.title === 'Opex System') {
+            parsed.login.title = 'HighCoreMc';
+          }
           setSettings(parsed);
         }
       } catch (err) {
