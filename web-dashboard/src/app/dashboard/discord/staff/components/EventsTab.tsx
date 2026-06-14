@@ -33,6 +33,8 @@ export default function EventsTab() {
   const [assignedStaff, setAssignedStaff] = useState<string[]>(['']);
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     setAssignedStaff(prev => {
@@ -51,6 +53,7 @@ export default function EventsTab() {
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const [roleDesc, setRoleDesc] = useState('');
   const [evidenceUrl, setEvidenceUrl] = useState('');
+  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
   const [attendanceRating, setAttendanceRating] = useState('excellent');
 
   useEffect(() => {
@@ -95,6 +98,30 @@ export default function EventsTab() {
       return;
     }
 
+    let finalImageUrl = imageUrl;
+    if (imageFile) {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.url) {
+          finalImageUrl = data.url;
+        } else {
+          throw new Error(data.error || 'Upload failed');
+        }
+      } catch (err: any) {
+        setConfirmConfig({
+          isOpen: true, type: 'danger', title: 'Upload Error', message: err.message,
+          onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
+        });
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
     const loggedAdmin = localStorage.getItem('adminUsername') || 'Guest';
 
     const eventPayload = {
@@ -106,7 +133,7 @@ export default function EventsTab() {
       points: points,
       section: 'dc',
       created_by: loggedAdmin,
-      image_url: imageUrl || null
+      image_url: finalImageUrl || null
     };
 
     let error;
@@ -171,6 +198,8 @@ export default function EventsTab() {
     setAssignedStaff(['']);
     setEditingEvent(null);
     setImageUrl('');
+    setImageFile(null);
+    setEvidenceFile(null);
   };
 
   const openEditEvent = (ev: any) => {
@@ -284,11 +313,35 @@ export default function EventsTab() {
     e.preventDefault();
     if (!selectedEventId || !currentEmpId) return;
 
+    let finalEvidenceUrl = evidenceUrl;
+    if (evidenceFile) {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append('file', evidenceFile);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.url) {
+          finalEvidenceUrl = data.url;
+        } else {
+          throw new Error(data.error || 'Upload failed');
+        }
+      } catch (err: any) {
+        setConfirmConfig({
+          isOpen: true, type: 'danger', title: 'Upload Error', message: err.message,
+          onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
+        });
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
     const { error } = await supabase.from('event_supervisors')
       .update({
         report_submitted: true,
         report_text: roleDesc,
-        report_image: evidenceUrl,
+        report_image: finalEvidenceUrl,
         attendance: attendanceRating,
         report_submitted_at: new Date().toISOString()
       })
@@ -450,11 +503,14 @@ export default function EventsTab() {
                     {ev.event_type === 'written' ? <><MessageSquare size={14} /> Written</> : <><Mic size={14} /> Stage</>}
                   </div>
 
-                  {ev.status && (
-                    <div style={{ position: 'absolute', top: '1.5rem', left: '7rem', display: 'flex', alignItems: 'center', gap: '0.3rem', background: ev.status === 'CANCELLED' ? 'rgba(239, 68, 68, 0.2)' : ev.status === 'STARTED' ? 'rgba(250, 204, 21, 0.2)' : ev.status === 'FINISHED' ? 'rgba(156, 163, 175, 0.2)' : 'rgba(34, 197, 94, 0.2)', color: ev.status === 'CANCELLED' ? '#ef4444' : ev.status === 'STARTED' ? '#facc15' : ev.status === 'FINISHED' ? '#9ca3af' : '#22c55e', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
-                      {ev.status === 'OPEN' ? <><Circle size={14} /> OPEN</> : ev.status === 'CLOSED' ? <><XCircle size={14} /> CLOSED</> : ev.status === 'STARTED' ? <><PlayCircle size={14} /> STARTED</> : ev.status === 'FINISHED' ? <><CheckCircle2 size={14} /> FINISHED</> : ev.status === 'CANCELLED' ? <><X size={14} /> CANCELLED</> : ev.status}
+                  {ev.status && (() => {
+                    const status = ev.status.toUpperCase();
+                    return (
+                    <div style={{ position: 'absolute', top: '1.5rem', left: '7rem', display: 'flex', alignItems: 'center', gap: '0.3rem', background: status === 'CANCELLED' ? 'rgba(239, 68, 68, 0.2)' : status === 'STARTED' ? 'rgba(250, 204, 21, 0.2)' : status === 'FINISHED' ? 'rgba(156, 163, 175, 0.2)' : 'rgba(34, 197, 94, 0.2)', color: status === 'CANCELLED' ? '#ef4444' : status === 'STARTED' ? '#facc15' : status === 'FINISHED' ? '#9ca3af' : '#22c55e', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
+                      {status === 'OPEN' ? <><Circle size={14} /> OPEN</> : status === 'CLOSED' ? <><XCircle size={14} /> CLOSED</> : status === 'STARTED' ? <><PlayCircle size={14} /> STARTED</> : status === 'FINISHED' ? <><CheckCircle2 size={14} /> FINISHED</> : status === 'CANCELLED' ? <><X size={14} /> CANCELLED</> : status}
                     </div>
-                  )}
+                    );
+                  })()}
                   
                   <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '0.5rem', paddingLeft: ev.status ? '13.5rem' : '6.5rem', paddingRight: '6.5rem' }}>{ev.title}</h3>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.5 }}>{ev.description}</p>
@@ -550,8 +606,9 @@ export default function EventsTab() {
                   <textarea required value={roleDesc} onChange={e => setRoleDesc(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', minHeight: '100px' }} placeholder="Detail your tasks and responsibilities during this event..." />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Proof Link (Evidence Image/Video)</label>
-                  <input type="url" required value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="https://..." />
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Proof File or URL (Optional)</label>
+                  <input type="file" accept="image/*,video/*" onChange={e => { if (e.target.files && e.target.files[0]) setEvidenceFile(e.target.files[0]); else setEvidenceFile(null); }} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', marginBottom: '0.5rem' }} />
+                  {!evidenceFile && <input type="url" value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://..." />}
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Performance Evaluation</label>
@@ -568,7 +625,9 @@ export default function EventsTab() {
                 </div>
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                   <button type="button" onClick={() => setShowReportModal(false)} style={{ flex: 1, padding: '0.8rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" style={{ flex: 1, padding: '0.8rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Submit Report</button>
+                  <button type="submit" disabled={isUploading} style={{ flex: 1, padding: '0.8rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1 }}>
+                    {isUploading ? 'Uploading...' : 'Submit Report'}
+                  </button>
                 </div>
               </form>
             </motion.div>
@@ -593,8 +652,9 @@ export default function EventsTab() {
                   <input type="text" required value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="e.g. Community Q&A" />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Image URL (Optional)</label>
-                  <input type="text" value={imageUrl} onChange={e => setImageUrl(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="https://example.com/image.png" />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Image File or URL (Optional)</label>
+                  <input type="file" accept="image/*" onChange={e => { if (e.target.files && e.target.files[0]) setImageFile(e.target.files[0]); else setImageFile(null); }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)', marginBottom: '0.5rem' }} />
+                  {!imageFile && <input type="text" value={imageUrl} onChange={e => setImageUrl(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://example.com/image.png" />}
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Description</label>
@@ -695,7 +755,7 @@ export default function EventsTab() {
 
                 <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem' }}>
                   <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.6rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" style={{ flex: 1, padding: '0.6rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>{editingEvent ? 'Save Changes' : 'Create Event'}</button>
+                  <button type="submit" disabled={isUploading} style={{ flex: 1, padding: '0.6rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 600, cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1 }}>{isUploading ? 'Uploading...' : editingEvent ? 'Save Changes' : 'Create Event'}</button>
                 </div>
               </form>
             </motion.div>

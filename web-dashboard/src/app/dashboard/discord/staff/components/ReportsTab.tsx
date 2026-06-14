@@ -20,6 +20,8 @@ export default function ReportsTab() {
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
   const [evidenceUrl, setEvidenceUrl] = useState('');
+  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [editingReport, setEditingReport] = useState<any | null>(null);
 
   // Confirm Modal Config
@@ -65,6 +67,45 @@ export default function ReportsTab() {
     e.preventDefault();
     if (!empId) return;
 
+    let finalEvidenceUrl = evidenceUrl;
+    
+    if (evidenceFile) {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append('file', evidenceFile);
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.url) {
+          finalEvidenceUrl = data.url;
+        } else {
+          setConfirmConfig({
+            isOpen: true,
+            type: 'danger',
+            title: 'Upload Error',
+            message: data.error || 'Failed to upload file.',
+            onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
+          });
+          setIsUploading(false);
+          return;
+        }
+      } catch (err: any) {
+        setConfirmConfig({
+          isOpen: true,
+          type: 'danger',
+          title: 'Upload Error',
+          message: err.message,
+          onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
+        });
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
     const empData = employees.find(e => e.id.toString() === empId);
 
     const reportPayload = {
@@ -73,7 +114,7 @@ export default function ReportsTab() {
       report_type: reportType,
       title: title,
       description: desc,
-      video_url: evidenceUrl,
+      video_url: finalEvidenceUrl,
       points: 10
     };
 
@@ -105,6 +146,7 @@ export default function ReportsTab() {
     setTitle('');
     setDesc('');
     setEvidenceUrl('');
+    setEvidenceFile(null);
     setReportType('dc_event_report');
     setEditingReport(null);
   };
@@ -341,14 +383,15 @@ export default function ReportsTab() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Evidence URL / Reference Link (Optional)</label>
-                  <input type="url" value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="https://..." />
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Evidence File (Image/Video) or URL (Optional)</label>
+                  <input type="file" accept="image/*,video/*" onChange={e => { if (e.target.files && e.target.files[0]) setEvidenceFile(e.target.files[0]); else setEvidenceFile(null); }} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', marginBottom: '0.5rem' }} />
+                  {!evidenceFile && <input type="url" value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://..." />}
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
                   <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.8rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" style={{ flex: 1, padding: '0.8rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>
-                    {editingReport ? 'Save Changes' : 'Submit Report'}
+                  <button type="submit" disabled={isUploading} style={{ flex: 1, padding: '0.8rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1 }}>
+                    {isUploading ? 'Uploading...' : editingReport ? 'Save Changes' : 'Submit Report'}
                   </button>
                 </div>
               </form>

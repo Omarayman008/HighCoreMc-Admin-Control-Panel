@@ -90,16 +90,19 @@ export default function TasksTab() {
 
     const loggedAdmin = localStorage.getItem('adminUsername') || 'Guest';
 
-    const taskPayload = {
+    const taskPayload: any = {
       title,
       description: desc,
       points,
       duration_days: daysLimit,
       section: 'dc',
       created_by: loggedAdmin,
-      is_private: isPrivate,
-      assigned_to: isPrivate ? assignedTo : null
+      is_private: isPrivate
     };
+
+    if (isPrivate) {
+      taskPayload.assigned_to = assignedTo;
+    }
 
     let error;
     if (editingTask) {

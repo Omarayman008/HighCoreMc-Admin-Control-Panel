@@ -116,7 +116,7 @@ export default function Dashboard() {
           supabase.from('settings').select('value').eq('key', 'dc_status').single(),
           supabase.from('tickets').select('*', { count: 'exact', head: true }).gte('created_at', startOfDay.toISOString()),
           supabase.from('tickets').select('*', { count: 'exact', head: true }),
-          supabase.from('activity_log').select('*').in('category', ['Points', 'Ranks', 'Reports', 'Events', 'Tasks', 'Announcements']).order('created_at', { ascending: false }).limit(15),
+          supabase.from('activity_log').select('*').order('created_at', { ascending: false }).limit(15),
           supabase.from('settings').select('value').eq('key', 'announcements').maybeSingle()
         ]);
 
@@ -211,7 +211,6 @@ export default function Dashboard() {
         // Re-fetch activities to update UI
         const { data: actsData } = await supabase.from('activity_log')
             .select('*')
-            .in('category', ['Points', 'Ranks', 'Reports', 'Events', 'Tasks', 'Announcements'])
             .order('created_at', { ascending: false })
             .limit(15);
         if (actsData) setActivities(actsData);
@@ -624,6 +623,7 @@ export default function Dashboard() {
               position: 'relative',
               maxHeight: '320px',
               overflowY: 'auto',
+              overflowX: 'hidden',
               paddingRight: '0.5rem'
             }}>
               <div style={{ position: 'absolute', left: '7px', top: '10px', bottom: '10px', width: '2px', background: 'rgba(255,255,255,0.1)' }}></div>
@@ -638,7 +638,7 @@ export default function Dashboard() {
                   >
                     <div style={{ position: 'absolute', left: '3px', top: '6px', width: '10px', height: '10px', borderRadius: '50%', background: 'var(--primary)', boxShadow: '0 0 10px var(--primary)' }}></div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1, minWidth: 0 }}>
-                      <div style={{ color: 'var(--foreground)', fontSize: '0.95rem' }}>
+                      <div style={{ color: 'var(--foreground)', fontSize: '0.85rem', wordBreak: 'break-word', whiteSpace: 'normal' }}>
                         <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{act.user_name || 'System'}</span> {translateArabicLog(act.action_type)}
                       </div>
                       <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 500 }}>
@@ -648,12 +648,13 @@ export default function Dashboard() {
                         <div style={{ 
                           color: 'var(--primary)', 
                           fontWeight: 500, 
-                          fontSize: '0.9rem', 
+                          fontSize: '0.8rem', 
                           background: 'var(--glass-highlight)', 
-                          padding: '0.6rem 0.8rem', 
+                          padding: '0.5rem 0.6rem', 
                           borderRadius: '10px', 
                           marginTop: '0.3rem',
                           wordBreak: 'break-word',
+                          whiteSpace: 'normal',
                           border: '1px solid var(--glass-border)',
                           width: '100%'
                         }}>

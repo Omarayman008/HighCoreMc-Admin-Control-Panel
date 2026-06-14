@@ -27,7 +27,10 @@ export default function ReportsTab() {
   const [handledVio, setHandledVio] = useState(0);
   const [generalVio, setGeneralVio] = useState(0);
   const [imagesUrl, setImagesUrl] = useState('');
+  const [imagesFile, setImagesFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState('');
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [editingReport, setEditingReport] = useState<any | null>(null);
 
   const [confirmConfig, setConfirmConfig] = useState<{isOpen: boolean, type: 'danger'|'success'|'info', title: string, message: string, onConfirm: () => void}>({
@@ -81,14 +84,40 @@ export default function ReportsTab() {
     const points = calculatePoints();
     const empData = employees.find(e => e.id.toString() === empId);
 
+    let finalImagesUrl = imagesUrl;
+    let finalVideoUrl = videoUrl;
+
+    const uploadFile = async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!data.url) throw new Error(data.error || 'Upload failed');
+      return data.url;
+    };
+
+    try {
+      if (imagesFile || videoFile) setIsUploading(true);
+      if (imagesFile) finalImagesUrl = await uploadFile(imagesFile);
+      if (videoFile) finalVideoUrl = await uploadFile(videoFile);
+    } catch (err: any) {
+      setConfirmConfig({
+        isOpen: true, type: 'danger', title: 'Upload Error', message: err.message,
+        onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
+      });
+      setIsUploading(false);
+      return;
+    }
+    setIsUploading(false);
+
     const reportPayload = {
       emp_id: empId.toString(),
       emp_name: empData?.name || 'Unknown',
       report_type: reportType,
       title: reportType === 'glitch' ? title : `Minecraft ${reportType} Report`,
       description: desc,
-      images_url: imagesUrl,
-      video_url: videoUrl,
+      images_url: finalImagesUrl,
+      video_url: finalVideoUrl,
       points: points,
       violations_handled: reportType === 'monitoring' ? handledVio : 0,
       violations_seen: reportType === 'monitoring' ? generalVio.toString() : '0',
@@ -128,7 +157,9 @@ export default function ReportsTab() {
     setHandledVio(0);
     setGeneralVio(0);
     setImagesUrl('');
+    setImagesFile(null);
     setVideoUrl('');
+    setVideoFile(null);
     setReportType('monitoring');
     setEditingReport(null);
   };
@@ -499,23 +530,25 @@ export default function ReportsTab() {
                   <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1, minWidth: '200px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                        <ImageIcon size={14} color="#55bb55" /> Screenshot Link (Optional)
+                        <ImageIcon size={14} color="#55bb55" /> Screenshot File or URL (Optional)
                       </label>
-                      <input type="url" value={imagesUrl} onChange={e => setImagesUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="https://imgur.com/..." />
+                      <input type="file" accept="image/*" onChange={e => { if (e.target.files && e.target.files[0]) setImagesFile(e.target.files[0]); else setImagesFile(null); }} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', marginBottom: '0.5rem' }} />
+                      {!imagesFile && <input type="url" value={imagesUrl} onChange={e => setImagesUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://imgur.com/..." />}
                     </div>
                     <div style={{ flex: 1, minWidth: '200px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                        <Video size={14} color="#55bb55" /> Video Link (Optional)
+                        <Video size={14} color="#55bb55" /> Video File or URL (Optional)
                       </label>
-                      <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="https://youtube.com/..." />
+                      <input type="file" accept="video/*" onChange={e => { if (e.target.files && e.target.files[0]) setVideoFile(e.target.files[0]); else setVideoFile(null); }} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', marginBottom: '0.5rem' }} />
+                      {!videoFile && <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://youtube.com/..." />}
                     </div>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
                   <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.8rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" style={{ flex: 1, padding: '0.8rem', background: '#55bb55', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>
-                    {editingReport ? 'Save Changes' : 'Submit Report'}
+                  <button type="submit" disabled={isUploading} style={{ flex: 1, padding: '0.8rem', background: '#55bb55', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1 }}>
+                    {isUploading ? 'Uploading...' : editingReport ? 'Save Changes' : 'Submit Report'}
                   </button>
                 </div>
               </form>
