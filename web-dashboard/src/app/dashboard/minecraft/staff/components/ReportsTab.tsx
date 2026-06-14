@@ -532,14 +532,24 @@ export default function ReportsTab() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                         <ImageIcon size={14} color="#55bb55" /> Screenshot File or URL (Optional)
                       </label>
-                      <input type="file" accept="image/*" onChange={e => { if (e.target.files && e.target.files[0]) setImagesFile(e.target.files[0]); else setImagesFile(null); }} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', marginBottom: '0.5rem' }} />
+                      <div style={{ position: 'relative', width: '100%', marginBottom: '0.5rem', cursor: 'pointer' }}>
+                        <input type="file" accept="image/*" onChange={e => { if (e.target.files && e.target.files[0]) setImagesFile(e.target.files[0]); else setImagesFile(null); }} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 2 }} />
+                        <div style={{ width: '100%', padding: '0.8rem', background: 'rgba(85, 187, 85, 0.1)', border: '1px dashed #55bb55', borderRadius: '10px', color: '#55bb55', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '1.2rem' }}>🖼️</span> {imagesFile ? imagesFile.name : 'Click to select image file...'}
+                        </div>
+                      </div>
                       {!imagesFile && <input type="url" value={imagesUrl} onChange={e => setImagesUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://imgur.com/..." />}
                     </div>
                     <div style={{ flex: 1, minWidth: '200px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                         <Video size={14} color="#55bb55" /> Video File or URL (Optional)
                       </label>
-                      <input type="file" accept="video/*" onChange={e => { if (e.target.files && e.target.files[0]) setVideoFile(e.target.files[0]); else setVideoFile(null); }} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', marginBottom: '0.5rem' }} />
+                      <div style={{ position: 'relative', width: '100%', marginBottom: '0.5rem', cursor: 'pointer' }}>
+                        <input type="file" accept="video/*" onChange={e => { if (e.target.files && e.target.files[0]) setVideoFile(e.target.files[0]); else setVideoFile(null); }} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 2 }} />
+                        <div style={{ width: '100%', padding: '0.8rem', background: 'rgba(85, 187, 85, 0.1)', border: '1px dashed #55bb55', borderRadius: '10px', color: '#55bb55', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '1.2rem' }}>🎬</span> {videoFile ? videoFile.name : 'Click to select video file...'}
+                        </div>
+                      </div>
                       {!videoFile && <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://youtube.com/..." />}
                     </div>
                   </div>

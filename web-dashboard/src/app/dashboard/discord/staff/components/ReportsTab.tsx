@@ -384,7 +384,12 @@ export default function ReportsTab() {
 
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Evidence File (Image/Video) or URL (Optional)</label>
-                  <input type="file" accept="image/*,video/*" onChange={e => { if (e.target.files && e.target.files[0]) setEvidenceFile(e.target.files[0]); else setEvidenceFile(null); }} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', marginBottom: '0.5rem' }} />
+                  <div style={{ position: 'relative', width: '100%', marginBottom: '0.5rem', cursor: 'pointer' }}>
+                    <input type="file" accept="image/*,video/*" onChange={e => { if (e.target.files && e.target.files[0]) setEvidenceFile(e.target.files[0]); else setEvidenceFile(null); }} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 2 }} />
+                    <div style={{ width: '100%', padding: '0.8rem', background: 'rgba(88, 101, 242, 0.1)', border: '1px dashed #5865F2', borderRadius: '10px', color: '#5865F2', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1.2rem' }}>📁</span> {evidenceFile ? evidenceFile.name : 'Click to select an evidence file...'}
+                    </div>
+                  </div>
                   {!evidenceFile && <input type="url" value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://..." />}
                 </div>
 

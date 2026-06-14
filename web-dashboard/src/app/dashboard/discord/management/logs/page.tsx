@@ -50,10 +50,8 @@ const translateArabicLog = (text: string) => {
     res = res.replace('تم تحديث الإداري', 'Updated staff member');
   }
 
-  res = res.replace(/[\u0600-\u06FF]/g, '');
   res = res.replace(/[🔵🟡🟢✅]/g, '');
-  res = res.replace(/\s+/g, ' ').trim();
-  return res || 'System Log';
+  return res.trim() || 'System Log';
 };
 
 // Main Page
@@ -67,6 +65,9 @@ export default function LogsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedAction, setSelectedAction] = useState('All');
+
+// Adding the 3rd filter
+  const [selectedAdmin, setSelectedAdmin] = useState('All');
 
   // Modals
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -217,6 +218,7 @@ export default function LogsPage() {
   // Filter Categories & Actions
   const rawCategories = Array.from(new Set(logs.map(l => l.category).filter(Boolean)));
   const rawActions = Array.from(new Set(logs.map(l => l.action_type).filter(Boolean)));
+  const rawAdmins = Array.from(new Set(logs.map(l => l.user_name).filter(Boolean)));
 
   const categoryOptions = [{ value: 'All', label: 'All Categories' }];
   const seenCategories = new Set<string>();
@@ -238,6 +240,11 @@ export default function LogsPage() {
     }
   });
 
+  const adminOptions = [{ value: 'All', label: 'All Staff / Admins' }];
+  rawAdmins.forEach(a => {
+    adminOptions.push({ value: a, label: a });
+  });
+
   const filteredLogs = logs.filter(log => {
     const matchesSearch =
       (log.user_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -249,8 +256,9 @@ export default function LogsPage() {
       translateArabicLog(log.category) === translateArabicLog(selectedCategory);
     const matchesAction = selectedAction === 'All' ||
       translateArabicLog(log.action_type) === translateArabicLog(selectedAction);
+    const matchesAdmin = selectedAdmin === 'All' || log.user_name === selectedAdmin;
 
-    return matchesSearch && matchesCategory && matchesAction;
+    return matchesSearch && matchesCategory && matchesAction && matchesAdmin;
   });
 
   // Auth Guard
@@ -328,7 +336,7 @@ export default function LogsPage() {
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', color: 'var(--foreground)', fontWeight: 700, fontSize: '0.95rem' }}>
           <SlidersHorizontal size={16} /> Filters
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
           <div style={{ position: 'relative' }}>
             <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)' }} />
             <input
@@ -338,6 +346,15 @@ export default function LogsPage() {
               onChange={e => setSearchQuery(e.target.value)}
               className="input-field"
               style={{ paddingLeft: '2.8rem', background: 'rgba(0,0,0,0.2)' }}
+            />
+          </div>
+
+          <div>
+            <CustomSelect
+              value={selectedAdmin}
+              onChange={val => setSelectedAdmin(val)}
+              placeholder="All Staff / Admins"
+              options={adminOptions}
             />
           </div>
 
@@ -382,19 +399,19 @@ export default function LogsPage() {
               <tbody>
                 {filteredLogs.map((log) => (
                   <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.85rem', color: 'var(--foreground)', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>
+                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.85rem', color: 'var(--foreground)', whiteSpace: 'nowrap', fontFamily: 'monospace', verticalAlign: 'top' }}>
                       {formatTimestamp(log.created_at)}
                     </td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.85rem', color: '#ffb93d', fontWeight: 600 }}>
+                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.85rem', color: '#ffb93d', fontWeight: 600, verticalAlign: 'top' }}>
                       {log.user_name || 'System'}
                     </td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.85rem', color: '#38bdf8', fontWeight: 600 }}>
+                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.85rem', color: '#38bdf8', fontWeight: 600, verticalAlign: 'top' }}>
                       {translateArabicLog(log.action_type)}
                     </td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', verticalAlign: 'top' }}>
                       {translateArabicLog(log.category || 'General')}
                     </td>
-                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.85rem', color: 'var(--foreground)', lineHeight: 1.4 }}>
+                    <td style={{ padding: '1rem 1.5rem', fontSize: '0.85rem', color: 'var(--foreground)', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word', verticalAlign: 'top' }}>
                       {translateArabicLog(log.details)}
                     </td>
                   </tr>

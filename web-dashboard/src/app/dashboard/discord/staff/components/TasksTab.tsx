@@ -62,7 +62,14 @@ export default function TasksTab() {
         supabase.from('employees').select('id, name, discord_id').order('name')
       ]);
 
-      if (tasksRes.data) setTasks(tasksRes.data);
+      if (tasksRes.data) {
+        const mapped = tasksRes.data.map((t: any) => ({
+          ...t,
+          is_private: t.task_type === 'private',
+          assigned_to: t.task_type === 'private' ? t.target_ranks : null
+        }));
+        setTasks(mapped);
+      }
       if (completionsRes.data) setCompletions(completionsRes.data);
       if (empsRes.data) {
         setEmployees(empsRes.data);
@@ -97,12 +104,9 @@ export default function TasksTab() {
       duration_days: daysLimit,
       section: 'dc',
       created_by: loggedAdmin,
-      is_private: isPrivate
+      task_type: isPrivate ? 'private' : 'general',
+      target_ranks: isPrivate ? assignedTo : null
     };
-
-    if (isPrivate) {
-      taskPayload.assigned_to = assignedTo;
-    }
 
     let error;
     if (editingTask) {
