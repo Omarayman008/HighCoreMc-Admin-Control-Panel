@@ -31,6 +31,8 @@ export default function EventsTab() {
   const [points, setPoints] = useState(15);
   const [isPrivate, setIsPrivate] = useState(false);
   const [assignedStaff, setAssignedStaff] = useState<string[]>(['']);
+  const [prizeType, setPrizeType] = useState('none');
+  const [prizeValue, setPrizeValue] = useState('');
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -124,9 +126,19 @@ export default function EventsTab() {
 
     const loggedAdmin = localStorage.getItem('adminUsername') || 'Guest';
 
+    let finalDesc = desc;
+    if (prizeType !== 'none' && prizeValue) {
+      const prizeMapping: any = {
+        'opics': 'Opexy Points',
+        'dc_role': 'Discord Role',
+        'nitro': 'Nitro Link'
+      };
+      finalDesc += `\n\n**Prize:** ${prizeValue} ${prizeMapping[prizeType] || ''}`;
+    }
+
     const eventPayload = {
       title: isPrivate && !title.startsWith('[Private]') ? `[Private] ${title}` : title,
-      description: desc,
+      description: finalDesc,
       event_type: type,
       event_date: eventDate,
       max_supervisors: maxSupervisors,
@@ -720,6 +732,27 @@ export default function EventsTab() {
                   <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Points Awarded</label>
                     <input type="number" min="1" value={points} onChange={e => setPoints(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.8rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Prize Type (Optional)</label>
+                    <CustomSelect 
+                      value={prizeType} 
+                      onChange={setPrizeType}
+                      options={[
+                        { value: 'none', label: 'No Prize' },
+                        { value: 'opics', label: 'Opexy Points' },
+                        { value: 'dc_role', label: 'Discord Role' },
+                        { value: 'nitro', label: 'Nitro Link' }
+                      ]}
+                      placeholder="Select Prize"
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Prize Value</label>
+                    <input type="text" disabled={prizeType === 'none'} value={prizeValue} onChange={e => setPrizeValue(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: prizeType === 'none' ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: prizeType === 'none' ? '#555' : 'var(--foreground)', cursor: prizeType === 'none' ? 'not-allowed' : 'text' }} placeholder={prizeType === 'dc_role' ? "Role ID" : prizeType === 'nitro' ? "https://discord.gift/..." : prizeType === 'opics' ? "Amount (e.g. 100)" : "N/A"} />
                   </div>
                 </div>
 

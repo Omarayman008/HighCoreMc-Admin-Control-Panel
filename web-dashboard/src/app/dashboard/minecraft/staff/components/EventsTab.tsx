@@ -31,8 +31,12 @@ export default function EventsTab() {
   const [points, setPoints] = useState(15);
   const [isPrivate, setIsPrivate] = useState(false);
   const [assignedStaff, setAssignedStaff] = useState<string[]>(['']);
+  const [prizeType, setPrizeType] = useState('none');
+  const [prizeValue, setPrizeValue] = useState('');
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     setAssignedStaff(prev => {
@@ -96,16 +100,49 @@ export default function EventsTab() {
 
     const loggedAdmin = localStorage.getItem('adminUsername') || 'System';
 
+    let finalDesc = desc;
+    if (prizeType !== 'none' && prizeValue) {
+      const prizeMapping: any = {
+        'cmi': 'CMI Money',
+        'tokens': 'Tokens',
+        'rank': 'Rank (ID)',
+        'item': 'Item',
+        'xp': 'XP',
+        'claims': 'Claims',
+        'afk': 'AFK Keys',
+        'opics': 'Opexy Points'
+      };
+      finalDesc += `\n\n**Prize:** ${prizeValue} ${prizeMapping[prizeType] || ''}`;
+    }
+
+    setIsUploading(true);
+    let finalImageUrl = imageUrl;
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.url) {
+          finalImageUrl = data.url;
+        } else {
+          console.error(data.error);
+        }
+      } catch (err) {
+        console.error("Upload failed", err);
+      }
+    }
+
     const eventPayload = {
       title: isPrivate && !title.startsWith('[Private]') ? `[Private] ${title}` : title,
-      description: desc,
+      description: finalDesc,
       type,
       event_date: eventDate,
       max_supervisors: maxSupervisors,
       points: points,
       section: 'mc',
       created_by: loggedAdmin,
-      image_url: imageUrl || null
+      image_url: finalImageUrl || null
     };
 
     let error;
@@ -152,6 +189,7 @@ export default function EventsTab() {
         onConfirm: () => setConfirmConfig(prev => ({ ...prev, isOpen: false }))
       });
     }
+    setIsUploading(false);
   };
 
   const resetForm = () => {
@@ -163,8 +201,11 @@ export default function EventsTab() {
     setPoints(15);
     setIsPrivate(false);
     setAssignedStaff(['']);
+    setPrizeType('none');
+    setPrizeValue('');
     setEditingEvent(null);
     setImageUrl('');
+    setImageFile(null);
   };
 
   const openEditEvent = (ev: any) => {
@@ -600,8 +641,14 @@ export default function EventsTab() {
                   <input type="text" required value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="e.g. Building Contest" />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Image URL (Optional)</label>
-                  <input type="text" value={imageUrl} onChange={e => setImageUrl(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="https://example.com/image.png" />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Image File or URL (Optional)</label>
+                  <div style={{ position: 'relative', width: '100%', marginBottom: '0.5rem', cursor: 'pointer' }}>
+                    <input type="file" accept="image/*" onChange={e => { if (e.target.files && e.target.files[0]) setImageFile(e.target.files[0]); else setImageFile(null); }} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 2 }} />
+                    <div style={{ width: '100%', padding: '0.8rem', background: 'rgba(85, 187, 85, 0.1)', border: '1px dashed #55bb55', borderRadius: '10px', color: '#55bb55', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1.2rem' }}>📁</span> {imageFile ? imageFile.name : 'Click to select an image file...'}
+                    </div>
+                  </div>
+                  {!imageFile && <input type="text" value={imageUrl} onChange={e => setImageUrl(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://example.com/image.png" />}
                 </div>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Description</label>
@@ -662,6 +709,34 @@ export default function EventsTab() {
 
                 <div style={{ display: 'flex', gap: '0.8rem' }}>
                   <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Prize Type (Optional)</label>
+                    <CustomSelect 
+                      value={prizeType} 
+                      onChange={setPrizeType}
+                      options={[
+                        { value: 'none', label: 'No Prize' },
+                        { value: 'cmi', label: 'CMI Money' },
+                        { value: 'tokens', label: 'Tokens' },
+                        { value: 'rank', label: 'Rank (ID)' },
+                        { value: 'item', label: 'Item' },
+                        { value: 'xp', label: 'XP' },
+                        { value: 'claims', label: 'Claims' },
+                        { value: 'afk', label: 'AFK Keys' },
+                        { value: 'opics', label: 'Opexy Points' }
+                      ]}
+                      placeholder="Select Prize"
+                      activeColor="#55bb55"
+                      activeBg="rgba(85, 187, 85, 0.15)"
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Prize Value</label>
+                    <input type="text" disabled={prizeType === 'none'} value={prizeValue} onChange={e => setPrizeValue(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: prizeType === 'none' ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: prizeType === 'none' ? '#555' : 'var(--foreground)', cursor: prizeType === 'none' ? 'not-allowed' : 'text' }} placeholder={prizeType === 'none' ? "N/A" : prizeType === 'rank' ? "Rank ID" : prizeType === 'item' ? "minecraft:diamond, 64" : "Amount (e.g. 100)"} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.8rem' }}>
+                  <div style={{ flex: 1 }}>
                     <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Event Visibility</label>
                     <CustomSelect 
                       value={isPrivate ? 'private' : 'public'}
@@ -706,7 +781,7 @@ export default function EventsTab() {
 
                 <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem' }}>
                   <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.6rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" style={{ flex: 1, padding: '0.6rem', background: '#55bb55', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>{editingEvent ? 'Save Changes' : 'Create Event'}</button>
+                  <button type="submit" disabled={isUploading} style={{ flex: 1, padding: '0.6rem', background: '#55bb55', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 600, cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1 }}>{isUploading ? 'Uploading...' : editingEvent ? 'Save Changes' : 'Create Event'}</button>
                 </div>
               </form>
             </motion.div>
