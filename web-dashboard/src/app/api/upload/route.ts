@@ -28,10 +28,7 @@ export async function POST(request: Request) {
     const path = join(uploadDir, filename);
     await writeFile(path, buffer);
     
-    const reqUrl = new URL(request.url);
-    const absoluteUrl = `${reqUrl.protocol}//${reqUrl.host}/uploads/${filename}`;
-    
-    return NextResponse.json({ url: absoluteUrl });
+    return NextResponse.json({ url: `/uploads/${filename}` });
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
