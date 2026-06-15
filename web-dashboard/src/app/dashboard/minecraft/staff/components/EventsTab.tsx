@@ -125,19 +125,23 @@ export default function EventsTab() {
     setIsUploading(true);
     let finalImageUrl = imageUrl;
     if (imageFile) {
+      setIsUploading(true);
       const formData = new FormData();
       formData.append('file', imageFile);
+      
       try {
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
         const data = await res.json();
         if (data.url) {
-          finalImageUrl = data.url;
-        } else {
-          console.error(data.error);
+          finalImageUrl = data.url.startsWith('http') ? data.url : window.location.origin + data.url;
         }
-      } catch (err) {
-        console.error("Upload failed", err);
+      } catch (e) {
+        console.error('Upload failed', e);
       }
+      setIsUploading(false);
     }
 
     const eventPayload = {

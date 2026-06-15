@@ -28,9 +28,8 @@ export async function POST(request: Request) {
     const path = join(uploadDir, filename);
     await writeFile(path, buffer);
     
-    const host = request.headers.get('host') || 'localhost:3000';
-    const protocol = request.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
-    const absoluteUrl = `${protocol}://${host}/uploads/${filename}`;
+    const reqUrl = new URL(request.url);
+    const absoluteUrl = `${reqUrl.protocol}//${reqUrl.host}/uploads/${filename}`;
     
     return NextResponse.json({ url: absoluteUrl });
   } catch (error) {

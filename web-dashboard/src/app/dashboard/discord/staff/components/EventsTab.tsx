@@ -116,7 +116,7 @@ export default function EventsTab() {
         const res = await fetch('/api/upload', { method: 'POST', body: formData });
         const data = await res.json();
         if (data.url) {
-          finalImageUrl = data.url;
+          finalImageUrl = data.url.startsWith('http') ? data.url : window.location.origin + data.url;
         } else {
           throw new Error(data.error || 'Upload failed');
         }
