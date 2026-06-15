@@ -84,7 +84,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.altKey && e.key.toLowerCase() === 'x') {
+      // Check both key and code to support different keyboard layouts (like Arabic)
+      if (e.altKey && (e.key.toLowerCase() === 'x' || e.code === 'KeyX')) {
         e.preventDefault();
         if (hasPerm('view_settings')) {
           setShowSettingsOverlay(prev => !prev);
@@ -796,30 +797,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
               style={{
-                width: '80%',
-                height: '85%',
-                background: '#0f0f13',
+                width: '90%',
+                maxWidth: '1200px',
+                height: '90vh',
+                background: 'var(--glass-bg)',
+                backdropFilter: 'blur(40px)',
                 borderRadius: '24px',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: '0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
+                border: '1px solid var(--glass-border)',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden'
               }}
             >
-              <div style={{ padding: '1rem 2rem', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.8rem', color: '#fff' }}>
-                  <Settings size={24} color="#EC4899" />
+              <div style={{ padding: '1.2rem 2rem', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--foreground)' }}>
+                  <div style={{ padding: '0.5rem', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '10px', display: 'flex' }}>
+                    <Settings size={22} color="#EC4899" />
+                  </div>
                   Quick Settings Overlay
                 </h2>
                 <button
                   onClick={() => setShowSettingsOverlay(false)}
-                  style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', padding: '0.5rem', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', padding: '0.5rem', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
                 >
-                  <XIcon size={20} />
+                  <XIcon size={18} />
                 </button>
               </div>
-              <div style={{ flex: 1, overflowY: 'auto', padding: '2rem' }} onClick={() => { if(isMobileSidebarOpen) setIsMobileSidebarOpen(false); }}>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 2rem' }} onClick={() => { if(isMobileSidebarOpen) setIsMobileSidebarOpen(false); }}>
                 {/* Render the full settings page */}
                 <SettingsPage />
               </div>
