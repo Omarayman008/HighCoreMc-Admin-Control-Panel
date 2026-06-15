@@ -78,6 +78,13 @@ export default function EventsTab() {
       if (supervisorsRes.data) setSupervisors(supervisorsRes.data);
       if (empsRes.data) {
         setEmployees(empsRes.data);
+        if (!currentEmpId) {
+          const adminUser = localStorage.getItem('adminUsername');
+          if (adminUser) {
+            const me = empsRes.data.find((e: any) => e.name === adminUser);
+            if (me) setCurrentEmpId(me.id.toString());
+          }
+        }
       }
     } catch (err) {
       console.error(err);

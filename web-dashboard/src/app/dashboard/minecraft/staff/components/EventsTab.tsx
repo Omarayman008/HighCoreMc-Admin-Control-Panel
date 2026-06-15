@@ -76,6 +76,13 @@ export default function EventsTab() {
       if (partsRes.data) setParticipants(partsRes.data);
       if (empsRes.data) {
         setEmployees(empsRes.data);
+        if (!currentEmpId) {
+          const adminUser = localStorage.getItem('adminUsername');
+          if (adminUser) {
+            const me = empsRes.data.find((e: any) => e.name === adminUser);
+            if (me) setCurrentEmpId(me.id.toString());
+          }
+        }
       }
     } catch (err) {
       console.error(err);
