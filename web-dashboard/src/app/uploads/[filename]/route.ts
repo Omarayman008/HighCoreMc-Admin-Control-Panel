@@ -3,7 +3,8 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
-export async function GET(request: Request, { params }: { params: { filename: string } }) {
+export async function GET(request: Request, context: { params: Promise<{ filename: string }> }) {
+  const params = await context.params;
   const filename = params.filename;
   if (!filename) {
     return new NextResponse('Not Found', { status: 404 });
