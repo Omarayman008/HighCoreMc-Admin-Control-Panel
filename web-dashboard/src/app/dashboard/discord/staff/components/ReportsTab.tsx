@@ -247,7 +247,7 @@ export default function ReportsTab() {
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>Loading reports...</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {reports.length === 0 && <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No reports found.</div>}
+          {reports.length === 0 && <div style={{ textAlign: 'center', padding: '1.2rem', color: 'var(--text-muted)' }}>No reports found.</div>}
           
           {reports.map((report) => (
             <motion.div 
@@ -257,7 +257,7 @@ export default function ReportsTab() {
               whileHover="hover"
               variants={{ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } }}
               transition={{ duration: 0.2 }}
-              style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}
+              style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.2rem', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}
             >
               
               {/* Overlay actions */}
@@ -275,7 +275,7 @@ export default function ReportsTab() {
 
               {/* Card Header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '0.8rem', borderRadius: '12px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '0.5rem 0.6rem', borderRadius: '12px' }}>
                   <FileText size={18} color="#5865F2" />
                 </div>
                 <div style={{ width: '100%' }}>
@@ -284,12 +284,12 @@ export default function ReportsTab() {
                       <div style={{ color: 'var(--foreground)', fontWeight: 700, fontSize: '1.1rem' }}>
                         {report.report_type === 'dc_event_report' ? 'Discord Event Report' : 'Other Discord Report'}
                       </div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
                         {report.emp_name} • {new Date(report.created_at).toLocaleDateString('en-GB')}
                       </div>
                     </div>
                     
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', paddingRight: '2.8rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', paddingRight: '2.8rem' }}>
                       <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.25rem 0.6rem', borderRadius: '20px', 
                         background: report.status === 'pending' ? 'rgba(250, 204, 21, 0.1)' : report.status === 'approved' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                         color: report.status === 'pending' ? '#facc15' : report.status === 'approved' ? '#22c55e' : '#ef4444'
@@ -297,7 +297,7 @@ export default function ReportsTab() {
                         {report.status.toUpperCase()}
                       </span>
 
-                      <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#5865F2' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#5865F2' }}>
                         +10 PTS
                       </div>
                     </div>
@@ -306,7 +306,7 @@ export default function ReportsTab() {
               </div>
 
               {/* Card Body */}
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 <div><strong>Title:</strong> {report.title}</div>
                 <div style={{ marginTop: '0.5rem' }}><strong>Description:</strong> {report.description}</div>
                 {report.video_url && <div style={{ marginTop: '0.5rem' }}><a href={report.video_url} target="_blank" rel="noreferrer" style={{ color: '#5865F2' }}>View Evidence / Link</a></div>}
@@ -316,7 +316,7 @@ export default function ReportsTab() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
                 {report.status === 'pending' ? (
                   <>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Waiting for review</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Waiting for review</div>
                     {isAdmin && (
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button onClick={() => handleReview(report.id, 'approved', report.points || 10, report.emp_id)} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', border: '1px solid rgba(34, 197, 94, 0.2)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
@@ -329,7 +329,7 @@ export default function ReportsTab() {
                     )}
                   </>
                 ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: report.status === 'approved' ? '#22c55e' : '#ef4444' }} />
                     Reviewed by <strong>{report.reviewed_by}</strong> on {report.reviewed_at ? new Date(report.reviewed_at).toLocaleDateString() : 'N/A'}
                   </div>
@@ -349,13 +349,13 @@ export default function ReportsTab() {
               initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }} 
               exit={{ opacity: 0, scale: 0.95 }} 
-              style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '480px', padding: '1.5rem', maxHeight: '85vh', overflowY: 'auto' }}
+              style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '420px', padding: '1.2rem', maxHeight: '80vh', overflowY: 'auto' }}
             >
               <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '1rem' }}>{editingReport ? 'Edit Discord Report' : 'Create Discord Report'}</h2>
               
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Report Type</label>
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Report Type</label>
                   <CustomSelect 
                     value={reportType} 
                     onChange={setReportType}
@@ -368,7 +368,7 @@ export default function ReportsTab() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Employee Name</label>
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Employee Name</label>
                   <CustomSelect 
                     value={empId} 
                     onChange={setEmpId}
@@ -378,29 +378,29 @@ export default function ReportsTab() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Report Title</label>
-                  <input type="text" required value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="e.g. Chat Raid Moderate" />
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Report Title</label>
+                  <input type="text" required value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="e.g. Chat Raid Moderate" />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Description</label>
-                  <textarea required value={desc} onChange={e => setDesc(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', minHeight: '60px', resize: 'vertical' }} placeholder="Provide a detailed description of your report..." />
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Description</label>
+                  <textarea required value={desc} onChange={e => setDesc(e.target.value)} style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', minHeight: '40px', resize: 'vertical' }} placeholder="Provide a detailed description of your report..." />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Evidence File (Image/Video) or URL (Optional)</label>
-                  <div style={{ position: 'relative', width: '100%', marginBottom: '0.5rem', cursor: 'pointer' }}>
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Evidence File (Image/Video) or URL (Optional)</label>
+                  <div style={{ position: 'relative', width: '100%', marginBottom: '0.2rem', cursor: 'pointer' }}>
                     <input type="file" accept="image/*,video/*" onChange={e => { if (e.target.files && e.target.files[0]) setEvidenceFile(e.target.files[0]); else setEvidenceFile(null); }} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 2 }} />
-                    <div style={{ width: '100%', padding: '0.8rem', background: 'rgba(88, 101, 242, 0.1)', border: '1px dashed #5865F2', borderRadius: '10px', color: '#5865F2', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                    <div style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(88, 101, 242, 0.1)', border: '1px dashed #5865F2', borderRadius: '10px', color: '#5865F2', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                       <span style={{ fontSize: '1.2rem' }}>📁</span> {evidenceFile ? evidenceFile.name : 'Click to select an evidence file...'}
                     </div>
                   </div>
-                  {!evidenceFile && <input type="url" value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://..." />}
+                  {!evidenceFile && <input type="url" value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://..." />}
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-                  <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.8rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" disabled={isUploading} style={{ flex: 1, padding: '0.8rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1 }}>
+                  <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.5rem 0.6rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                  <button type="submit" disabled={isUploading} style={{ flex: 1, padding: '0.5rem 0.6rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1 }}>
                     {isUploading ? 'Uploading...' : editingReport ? 'Save Changes' : 'Submit Report'}
                   </button>
                 </div>

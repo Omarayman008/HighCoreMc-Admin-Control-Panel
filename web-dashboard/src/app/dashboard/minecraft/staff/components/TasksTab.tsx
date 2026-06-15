@@ -243,12 +243,12 @@ export default function TasksTab() {
       <AnimatePresence>
         {completedPoints !== null && (
           <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999, display: 'flex', alignItems: 'center', gap: '1rem', background: '#1e293b', border: '1px solid rgba(85, 187, 85, 0.3)', borderRadius: '16px', padding: '1.2rem 1.5rem', boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.5)' }}>
-            <div style={{ background: 'rgba(85, 187, 85, 0.1)', color: '#55bb55', padding: '0.6rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: 'rgba(85, 187, 85, 0.1)', color: '#55bb55', padding: '0.4rem 0.5rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <CheckCircle size={24} />
             </div>
             <div>
               <h4 style={{ color: 'var(--foreground)', fontSize: '1rem', fontWeight: 700, margin: 0, marginBottom: '0.2rem' }}>Task Completed!</h4>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>You earned <span style={{ color: '#55bb55', fontWeight: 800 }}>+{completedPoints}</span> points.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: 0 }}>You earned <span style={{ color: '#55bb55', fontWeight: 800 }}>+{completedPoints}</span> points.</p>
             </div>
           </motion.div>
         )}
@@ -294,7 +294,7 @@ export default function TasksTab() {
             const myPrivateTasks = tasks.filter(t => t.is_private && t.assigned_to === loggedInEmpId && !completions.some(c => c.task_id === t.id && c.emp_id === parseInt(loggedInEmpId)));
             if (myPrivateTasks.length > 0) {
               return (
-                <div style={{ marginBottom: '1.5rem', background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.3)', padding: '1rem', borderRadius: '12px', color: '#ec4899', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                <div style={{ marginBottom: '1.5rem', background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.3)', padding: '1rem', borderRadius: '12px', color: '#ec4899', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                   <div style={{ background: '#ec4899', width: '8px', height: '8px', borderRadius: '50%', boxShadow: '0 0 10px #ec4899' }}></div>
                   Alert: You have {myPrivateTasks.length} private tasks assigned to you waiting to be completed!
                 </div>
@@ -303,7 +303,7 @@ export default function TasksTab() {
             return null;
           })()}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-            {tasks.length === 0 && <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', gridColumn: '1 / -1' }}>No active tasks available.</div>}
+            {tasks.length === 0 && <div style={{ textAlign: 'center', padding: '1.2rem', color: 'var(--text-muted)', gridColumn: '1 / -1' }}>No active tasks available.</div>}
           
           {tasks.filter(t => currentEmpId ? (!t.is_private || t.assigned_to === currentEmpId) : (!t.is_private || t.assigned_to === loggedInEmpId || isAdmin)).map((task) => {
             const hasCompleted = loggedInEmpId ? completions.some(c => c.task_id === task.id && c.emp_id === parseInt(loggedInEmpId)) : false;
@@ -318,7 +318,7 @@ export default function TasksTab() {
                 whileHover="hover"
                 variants={{ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } }}
                 transition={{ duration: 0.2 }}
-                style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}
+                style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.2rem', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}
               >
                 
                 {/* Actions overlay */}
@@ -343,16 +343,16 @@ export default function TasksTab() {
                     {task.title}
                     {task.is_private && <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: 'rgba(236,72,153,0.1)', color: '#ec4899', borderRadius: '10px', border: '1px solid rgba(236,72,153,0.2)' }}>Private</span>}
                   </h3>
-                  <div style={{ background: 'rgba(85, 187, 85, 0.1)', color: '#55bb55', padding: '0.3rem 0.8rem', borderRadius: '20px', fontWeight: 700, fontSize: '0.9rem' }}>
+                  <div style={{ background: 'rgba(85, 187, 85, 0.1)', color: '#55bb55', padding: '0.3rem 0.8rem', borderRadius: '20px', fontWeight: 700, fontSize: '0.8rem' }}>
                     +{task.points}
                   </div>
                 </div>
 
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', flex: 1, lineHeight: 1.6 }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '1.5rem', flex: 1, lineHeight: 1.6 }}>
                   {task.description}
                 </p>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: isExpired ? '#ef4444' : '#eab308' }}>
                     <Clock size={14} /> {isExpired ? 'Expired' : `${remaining} days left`}
                   </div>
@@ -369,7 +369,7 @@ export default function TasksTab() {
                       <button 
                         onClick={() => handleCompleteTask(task)}
                         disabled={isDisabled}
-                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: isDisabled ? 'rgba(255,255,255,0.05)' : '#55bb55', color: isDisabled ? 'var(--text-muted)' : '#fff', border: 'none', padding: '0.8rem', borderRadius: '10px', fontWeight: 600, cursor: isDisabled ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
+                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: isDisabled ? 'rgba(255,255,255,0.05)' : '#55bb55', color: isDisabled ? 'var(--text-muted)' : '#fff', border: 'none', padding: '0.5rem 0.6rem', borderRadius: '10px', fontWeight: 600, cursor: isDisabled ? 'not-allowed' : 'pointer', transition: 'all 0.2s' }}
                       >
                         <CheckCircle size={18} /> {hasCompleted ? 'Completed' : 'Complete Task'}
                       </button>
@@ -388,34 +388,34 @@ export default function TasksTab() {
       <AnimatePresence>
         {showAddModal && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '500px', padding: '2rem' }}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '420px', padding: '1.2rem' }}>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '1.5rem' }}>{editingTask ? 'Edit Minecraft Task' : 'Add New Minecraft Task'}</h2>
               
               <form onSubmit={handleCreateTask} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Task Title</label>
-                  <input type="text" required value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="e.g. Build Spawn Area" />
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Task Title</label>
+                  <input type="text" required value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="e.g. Build Spawn Area" />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Detailed Description</label>
-                  <textarea required value={desc} onChange={e => setDesc(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', minHeight: '100px', resize: 'vertical' }} placeholder="Explain what needs to be done..." />
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Detailed Description</label>
+                  <textarea required value={desc} onChange={e => setDesc(e.target.value)} style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', minHeight: '100px', resize: 'vertical' }} placeholder="Explain what needs to be done..." />
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Points</label>
-                    <input type="number" min="1" required value={points} onChange={e => setPoints(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
+                    <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Points</label>
+                    <input type="number" min="1" required value={points} onChange={e => setPoints(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Duration (Days)</label>
-                    <input type="number" min="1" required value={daysLimit} onChange={e => setDaysLimit(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
+                    <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Duration (Days)</label>
+                    <input type="number" min="1" required value={daysLimit} onChange={e => setDaysLimit(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} />
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Task Type</label>
+                    <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Task Type</label>
                     <CustomSelect
                       value={isPrivate ? 'private' : 'public'}
                       onChange={(val) => setIsPrivate(val === 'private')}
@@ -430,7 +430,7 @@ export default function TasksTab() {
                   </div>
                   {isPrivate && (
                     <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Assign To</label>
+                      <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Assign To</label>
                       <CustomSelect
                         value={assignedTo}
                         onChange={setAssignedTo}
@@ -447,8 +447,8 @@ export default function TasksTab() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                  <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.8rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" style={{ flex: 1, padding: '0.8rem', background: '#55bb55', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>
+                  <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.5rem 0.6rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                  <button type="submit" style={{ flex: 1, padding: '0.5rem 0.6rem', background: '#55bb55', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>
                     {editingTask ? 'Save Changes' : 'Publish Task'}
                   </button>
                 </div>

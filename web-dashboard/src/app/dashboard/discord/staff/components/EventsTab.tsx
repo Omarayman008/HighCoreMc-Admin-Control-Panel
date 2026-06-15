@@ -482,7 +482,7 @@ export default function EventsTab() {
         <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>Loading events...</div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
-          {events.length === 0 && <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No events found.</div>}
+          {events.length === 0 && <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '1.2rem', color: 'var(--text-muted)' }}>No events found.</div>}
           
           {events.map((ev) => {
             const evSupervisors = supervisors.filter(s => s.event_id === ev.id);
@@ -517,7 +517,7 @@ export default function EventsTab() {
                 )}
 
                 {/* Event Details */}
-                <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative' }}>
+                <div style={{ padding: '1.2rem', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(255,255,255,0.1)', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
                       {ev.event_type === 'written' ? <><MessageSquare size={14} /> Written</> : <><Mic size={14} /> Stage</>}
@@ -534,9 +534,9 @@ export default function EventsTab() {
                   </div>
                   
                   <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '0.8rem', paddingRight: '5rem' }}>{ev.title}</h3>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.2rem', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: ev.description.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--foreground);font-weight:700;">$1</strong>').replace(/\n/g, '<br/>') }} />
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '1.2rem', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: ev.description.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--foreground);font-weight:700;">$1</strong>').replace(/\n/g, '<br/>') }} />
                   
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0,0,0,0.2)', padding: '0.4rem 0.8rem', borderRadius: '8px' }}>
                       <CalendarDays size={14} /> {new Date(ev.event_date).toLocaleString('en-GB')}
                     </div>
@@ -547,7 +547,7 @@ export default function EventsTab() {
                 </div>
 
                 {/* Claim details */}
-                <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '1.2rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>Supervisors ({evSupervisors.length}/{ev.max_supervisors})</span>
                     {!isPast && !mySupervisorRow && (
@@ -561,13 +561,13 @@ export default function EventsTab() {
                     )}
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', flex: 1 }}>
-                    {evSupervisors.length === 0 && <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '1rem 0' }}>No supervisors assigned.</div>}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', flex: 1 }}>
+                    {evSupervisors.length === 0 && <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textAlign: 'center', padding: '1rem 0' }}>No supervisors assigned.</div>}
                     
                     {evSupervisors.map((p) => {
                       const st = getStatusLabel(p);
                       return (
-                        <div key={p.id} style={{ display: 'flex', flexDirection: 'column', background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '10px', borderLeft: `3px solid ${st.color}` }}>
+                        <div key={p.id} style={{ display: 'flex', flexDirection: 'column', background: 'rgba(0,0,0,0.2)', padding: '0.5rem 0.6rem', borderRadius: '10px', borderLeft: `3px solid ${st.color}` }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>{p.emp_name}</span>
                             <span style={{ fontSize: '0.75rem', fontWeight: 600, color: st.color, background: st.bg, padding: '0.2rem 0.6rem', borderRadius: '12px' }}>{st.text}</span>
@@ -582,8 +582,8 @@ export default function EventsTab() {
 
                           {/* Admin Review */}
                           {isAdmin && p.report_submitted && p.review_status === 'pending' && (
-                            <div style={{ marginTop: '0.8rem', padding: '0.8rem', background: 'var(--background)', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-                              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.8rem' }}>
+                            <div style={{ marginTop: '0.8rem', padding: '0.5rem 0.6rem', background: 'var(--background)', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.8rem' }}>
                                 <div><strong>Description:</strong> {p.report_text}</div>
                                 <div><strong>Rating:</strong> {p.attendance.toUpperCase()}</div>
                                 {p.report_image && <div style={{ marginTop: '0.3rem' }}><a href={p.report_image} target="_blank" rel="noreferrer" style={{ color: '#5865F2' }}>View Evidence</a></div>}
@@ -618,26 +618,26 @@ export default function EventsTab() {
               initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }} 
               exit={{ opacity: 0, scale: 0.95 }} 
-              style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '550px', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}
+              style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '20px', width: '100%', maxWidth: '550px', padding: '1.2rem', maxHeight: '80vh', overflowY: 'auto' }}
             >
               <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '1.5rem' }}>Submit Supervisor Report</h2>
               <form onSubmit={handleSubmitReport} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Role Description</label>
-                  <textarea required value={roleDesc} onChange={e => setRoleDesc(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', minHeight: '100px' }} placeholder="Detail your tasks and responsibilities during this event..." />
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Role Description</label>
+                  <textarea required value={roleDesc} onChange={e => setRoleDesc(e.target.value)} style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)', minHeight: '100px' }} placeholder="Detail your tasks and responsibilities during this event..." />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Proof File or URL (Optional)</label>
-                  <div style={{ position: 'relative', width: '100%', marginBottom: '0.5rem', cursor: 'pointer' }}>
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Proof File or URL (Optional)</label>
+                  <div style={{ position: 'relative', width: '100%', marginBottom: '0.2rem', cursor: 'pointer' }}>
                     <input type="file" accept="image/*,video/*" onChange={e => { if (e.target.files && e.target.files[0]) setEvidenceFile(e.target.files[0]); else setEvidenceFile(null); }} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 2 }} />
-                    <div style={{ width: '100%', padding: '0.8rem', background: 'rgba(88, 101, 242, 0.1)', border: '1px dashed #5865F2', borderRadius: '10px', color: '#5865F2', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                    <div style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(88, 101, 242, 0.1)', border: '1px dashed #5865F2', borderRadius: '10px', color: '#5865F2', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                       <span style={{ fontSize: '1.2rem' }}>📁</span> {evidenceFile ? evidenceFile.name : 'Click to select an evidence file...'}
                     </div>
                   </div>
-                  {!evidenceFile && <input type="url" value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://..." />}
+                  {!evidenceFile && <input type="url" value={evidenceUrl} onChange={e => setEvidenceUrl(e.target.value)} style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://..." />}
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Performance Evaluation</label>
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>Performance Evaluation</label>
                   <CustomSelect 
                     value={attendanceRating} 
                     onChange={setAttendanceRating}
@@ -650,8 +650,8 @@ export default function EventsTab() {
                   />
                 </div>
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                  <button type="button" onClick={() => setShowReportModal(false)} style={{ flex: 1, padding: '0.8rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" disabled={isUploading} style={{ flex: 1, padding: '0.8rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1 }}>
+                  <button type="button" onClick={() => setShowReportModal(false)} style={{ flex: 1, padding: '0.5rem 0.6rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                  <button type="submit" disabled={isUploading} style={{ flex: 1, padding: '0.5rem 0.6rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '10px', fontWeight: 600, cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1 }}>
                     {isUploading ? 'Uploading...' : 'Submit Report'}
                   </button>
                 </div>
@@ -669,35 +669,35 @@ export default function EventsTab() {
               initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }} 
               exit={{ opacity: 0, scale: 0.95 }} 
-              style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '480px', padding: '1.5rem', maxHeight: '85vh', overflowY: 'auto' }}
+              style={{ background: 'var(--background)', border: '1px solid var(--glass-border)', borderRadius: '16px', width: '100%', maxWidth: '420px', padding: '1.2rem', maxHeight: '80vh', overflowY: 'auto' }}
             >
               <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '1rem' }}>{editingEvent ? 'Edit Discord Event' : 'Create Discord Event'}</h2>
-              <form onSubmit={handleCreateEvent} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              <form onSubmit={handleCreateEvent} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Event Title</label>
-                  <input type="text" required value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="e.g. Community Q&A" />
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>Event Title</label>
+                  <input type="text" required value={title} onChange={e => setTitle(e.target.value)} style={{ width: '100%', padding: '0.4rem 0.5rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="e.g. Community Q&A" />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Image File or URL (Optional)</label>
-                  <div style={{ position: 'relative', width: '100%', marginBottom: '0.5rem', cursor: 'pointer' }}>
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>Image File or URL (Optional)</label>
+                  <div style={{ position: 'relative', width: '100%', marginBottom: '0.2rem', cursor: 'pointer' }}>
                     <input type="file" accept="image/*" onChange={e => { if (e.target.files && e.target.files[0]) setImageFile(e.target.files[0]); else setImageFile(null); }} style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 2 }} />
-                    <div style={{ width: '100%', padding: '0.8rem', background: 'rgba(88, 101, 242, 0.1)', border: '1px dashed #5865F2', borderRadius: '10px', color: '#5865F2', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                    <div style={{ width: '100%', padding: '0.5rem 0.6rem', background: 'rgba(88, 101, 242, 0.1)', border: '1px dashed #5865F2', borderRadius: '10px', color: '#5865F2', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                       <span style={{ fontSize: '1.2rem' }}>📁</span> {imageFile ? imageFile.name : 'Click to select an image file...'}
                     </div>
                   </div>
-                  {!imageFile && <input type="text" value={imageUrl} onChange={e => setImageUrl(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://example.com/image.png" />}
+                  {!imageFile && <input type="text" value={imageUrl} onChange={e => setImageUrl(e.target.value)} style={{ width: '100%', padding: '0.4rem 0.5rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} placeholder="Or paste URL here: https://example.com/image.png" />}
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Description</label>
+                  <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>Description</label>
                   <textarea required value={desc} onChange={e => {
                     setDesc(e.target.value);
                     e.target.style.height = 'auto';
                     e.target.style.height = e.target.scrollHeight + 'px';
-                  }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)', minHeight: '60px', resize: 'none', overflow: 'hidden' }} />
+                  }} style={{ width: '100%', padding: '0.4rem 0.5rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)', minHeight: '40px', resize: 'none', overflow: 'hidden' }} />
                 </div>
-                <div style={{ display: 'flex', gap: '0.8rem' }}>
+                <div style={{ display: 'flex', gap: '0.6rem' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Event Type</label>
+                    <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>Event Type</label>
                     <CustomSelect 
                       value={type} 
                       onChange={(val) => {
@@ -718,7 +718,7 @@ export default function EventsTab() {
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Date & Time</label>
+                    <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>Date & Time</label>
                     <DatePicker 
                       selected={eventDate ? new Date(eventDate) : null}
                       onChange={(date: Date | null) => setEventDate(date ? date.toISOString() : '')}
@@ -728,25 +728,25 @@ export default function EventsTab() {
                       timeCaption="Time"
                       dateFormat="MMMM d, yyyy h:mm aa"
                       placeholderText="Select Date & Time"
-                      customInput={<input style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} />}
+                      customInput={<input style={{ width: '100%', padding: '0.4rem 0.5rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} />}
                     />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.8rem' }}>
+                <div style={{ display: 'flex', gap: '0.6rem' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Max Supervisors (Max 5)</label>
-                    <input type="number" min="1" max="5" value={maxSupervisors} onChange={e => setMaxSupervisors(Math.min(5, Math.max(1, parseInt(e.target.value) || 1)))} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} />
+                    <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>Max Supervisors (Max 5)</label>
+                    <input type="number" min="1" max="5" value={maxSupervisors} onChange={e => setMaxSupervisors(Math.min(5, Math.max(1, parseInt(e.target.value) || 1)))} style={{ width: '100%', padding: '0.4rem 0.5rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Points Awarded</label>
-                    <input type="number" min="1" value={points} onChange={e => setPoints(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} />
+                    <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>Points Awarded</label>
+                    <input type="number" min="1" value={points} onChange={e => setPoints(parseInt(e.target.value) || 0)} style={{ width: '100%', padding: '0.4rem 0.5rem', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--foreground)' }} />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.8rem' }}>
+                <div style={{ display: 'flex', gap: '0.6rem' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Prize Type (Optional)</label>
+                    <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>Prize Type (Optional)</label>
                     <CustomSelect 
                       value={prizeType} 
                       onChange={setPrizeType}
@@ -760,14 +760,14 @@ export default function EventsTab() {
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Prize Value</label>
-                    <input type="text" disabled={prizeType === 'none'} value={prizeValue} onChange={e => setPrizeValue(e.target.value)} style={{ width: '100%', padding: '0.6rem', background: prizeType === 'none' ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: prizeType === 'none' ? '#555' : 'var(--foreground)', cursor: prizeType === 'none' ? 'not-allowed' : 'text' }} placeholder={prizeType === 'dc_role' ? "Role ID" : prizeType === 'nitro' ? "https://discord.gift/..." : prizeType === 'opics' ? "Amount (e.g. 100)" : "N/A"} />
+                    <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>Prize Value</label>
+                    <input type="text" disabled={prizeType === 'none'} value={prizeValue} onChange={e => setPrizeValue(e.target.value)} style={{ width: '100%', padding: '0.4rem 0.5rem', background: prizeType === 'none' ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: prizeType === 'none' ? '#555' : 'var(--foreground)', cursor: prizeType === 'none' ? 'not-allowed' : 'text' }} placeholder={prizeType === 'dc_role' ? "Role ID" : prizeType === 'nitro' ? "https://discord.gift/..." : prizeType === 'opics' ? "Amount (e.g. 100)" : "N/A"} />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.8rem' }}>
+                <div style={{ display: 'flex', gap: '0.6rem' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Event Visibility</label>
+                    <label style={{ display: 'block', marginBottom: '0.2rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>Event Visibility</label>
                     <CustomSelect 
                       value={isPrivate ? 'private' : 'public'}
                       onChange={(val) => setIsPrivate(val === 'private')}
@@ -781,8 +781,8 @@ export default function EventsTab() {
                 </div>
 
                 {isPrivate && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', background: 'rgba(236,72,153,0.05)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(236,72,153,0.2)' }}>
-                    <label style={{ display: 'block', color: '#ec4899', fontSize: '0.85rem', fontWeight: 600 }}>Assign Supervisors ({maxSupervisors})</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', background: 'rgba(236,72,153,0.05)', padding: '0.5rem 0.6rem', borderRadius: '8px', border: '1px solid rgba(236,72,153,0.2)' }}>
+                    <label style={{ display: 'block', color: '#ec4899', fontSize: '0.75rem', fontWeight: 600 }}>Assign Supervisors ({maxSupervisors})</label>
                     <div style={{ maxHeight: '100px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem', paddingRight: '0.4rem' }}>
                       {assignedStaff.map((staffId, idx) => (
                         <div key={idx}>
@@ -805,9 +805,9 @@ export default function EventsTab() {
                   </div>
                 )}
 
-                <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem' }}>
-                  <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.6rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                  <button type="submit" disabled={isUploading} style={{ flex: 1, padding: '0.6rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 600, cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1 }}>{isUploading ? 'Uploading...' : editingEvent ? 'Save Changes' : 'Create Event'}</button>
+                <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.5rem' }}>
+                  <button type="button" onClick={() => { setShowAddModal(false); resetForm(); }} style={{ flex: 1, padding: '0.4rem 0.5rem', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--foreground)', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                  <button type="submit" disabled={isUploading} style={{ flex: 1, padding: '0.4rem 0.5rem', background: '#5865F2', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 600, cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1 }}>{isUploading ? 'Uploading...' : editingEvent ? 'Save Changes' : 'Create Event'}</button>
                 </div>
               </form>
             </motion.div>
