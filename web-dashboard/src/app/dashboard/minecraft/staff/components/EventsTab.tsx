@@ -485,24 +485,26 @@ export default function EventsTab() {
 
                 {/* Event Details */}
                 <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600 }}>
-                    {ev.type === 'text' ? <><MessageSquare size={14} /> Text</> : <><Mic size={14} /> Stage</>}
-                  </div>
-
-                  {ev.status && (
-                    <div style={{ position: 'absolute', top: '1.5rem', left: '6.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem', background: ev.status === 'CANCELLED' ? 'rgba(239, 68, 68, 0.2)' : ev.status === 'STARTED' ? 'rgba(250, 204, 21, 0.2)' : ev.status === 'FINISHED' ? 'rgba(156, 163, 175, 0.2)' : 'rgba(34, 197, 94, 0.2)', color: ev.status === 'CANCELLED' ? '#ef4444' : ev.status === 'STARTED' ? '#facc15' : ev.status === 'FINISHED' ? '#9ca3af' : '#22c55e', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
-                      {ev.status === 'OPEN' ? <><Circle size={14} /> OPEN</> : ev.status === 'CLOSED' ? <><XCircle size={14} /> CLOSED</> : ev.status === 'STARTED' ? <><PlayCircle size={14} /> STARTED</> : ev.status === 'FINISHED' ? <><CheckCircle2 size={14} /> FINISHED</> : ev.status === 'CANCELLED' ? <><X size={14} /> CANCELLED</> : ev.status}
+                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(255,255,255,0.1)', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
+                      {ev.type === 'text' ? <><MessageSquare size={14} /> Text</> : <><Mic size={14} /> Stage</>}
                     </div>
-                  )}
+
+                    {ev.status && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: ev.status === 'CANCELLED' ? 'rgba(239, 68, 68, 0.2)' : ev.status === 'STARTED' ? 'rgba(250, 204, 21, 0.2)' : ev.status === 'FINISHED' ? 'rgba(156, 163, 175, 0.2)' : 'rgba(34, 197, 94, 0.2)', color: ev.status === 'CANCELLED' ? '#ef4444' : ev.status === 'STARTED' ? '#facc15' : ev.status === 'FINISHED' ? '#9ca3af' : '#22c55e', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
+                        {ev.status === 'OPEN' ? <><Circle size={14} /> OPEN</> : ev.status === 'CLOSED' ? <><XCircle size={14} /> CLOSED</> : ev.status === 'STARTED' ? <><PlayCircle size={14} /> STARTED</> : ev.status === 'FINISHED' ? <><CheckCircle2 size={14} /> FINISHED</> : ev.status === 'CANCELLED' ? <><X size={14} /> CANCELLED</> : ev.status}
+                      </div>
+                    )}
+                  </div>
                   
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '0.5rem', paddingLeft: ev.status ? '13rem' : '6.5rem', paddingRight: '6.5rem' }}>{ev.title}</h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.5 }}>{ev.description}</p>
+                  <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '0.8rem', paddingRight: '5rem' }}>{ev.title}</h3>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.2rem', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: ev.description.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--foreground);font-weight:700;">$1</strong>').replace(/\n/g, '<br/>') }} />
                   
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0,0,0,0.2)', padding: '0.4rem 0.8rem', borderRadius: '8px' }}>
                       <CalendarDays size={14} /> {new Date(ev.event_date).toLocaleString('en-GB')}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#55bb55', fontWeight: 700 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#55bb55', fontWeight: 700, background: 'rgba(85, 187, 85, 0.1)', padding: '0.4rem 0.8rem', borderRadius: '8px' }}>
                       <Award size={14} /> {ev.points} PTS
                     </div>
                   </div>
